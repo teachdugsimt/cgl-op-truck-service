@@ -1,12 +1,11 @@
 import fastify from 'fastify'
 import fastifyBlipp from "fastify-blipp";
 import { bootstrap } from 'fastify-decorators';
-
 import { resolve } from 'path';
 
 import configApp from './config/app'
 import configSwagger from './config/swagger'
-import db from './plugins/db';
+import db from './plugins/index';
 
 function build(opts: object = configApp) {
   const app = fastify(opts)
@@ -14,6 +13,7 @@ function build(opts: object = configApp) {
   app.register(require('fastify-swagger'), configSwagger)
 
   app.register(db);
+
 
   app.register(bootstrap, {
     directory: resolve(__dirname, `controllers`),

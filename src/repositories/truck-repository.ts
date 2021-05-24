@@ -14,6 +14,7 @@ export default class TruckRepository {
   }
 
   async findAll(server: any, filter: any = this._defaultFilter) {
+    // console.log("Server => DB => : ", server.db)
     let repository: any = await server?.db?.truck
 
     // await repository.save({
