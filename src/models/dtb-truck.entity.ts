@@ -1,12 +1,7 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn
-} from 'typeorm';
+import { Index, Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, } from "typeorm";
 
-@Entity({ name: 'dtb_truck' })
+@Index("dtb_truck_pkey", ["id"], { unique: true })
+@Entity("dtb_truck", { schema: "public" })
 export class DtbTruck {
   @PrimaryGeneratedColumn({ type: 'int4' })
   id: number
@@ -16,8 +11,6 @@ export class DtbTruck {
 
   @Column({ type: 'int4', nullable: false, default: 0 })
   carrier_id: number
-
-
 
   @Column({ length: 255, nullable: true })
   insurance_policy_document: string
@@ -51,8 +44,8 @@ export class DtbTruck {
 
 
 
-  @Column({ type: 'int4', nullable: false })
-  created_user: number
+  @Column({ type: 'varchar', length: 254, nullable: true })
+  created_user: string
 
   @Column({ type: 'int4', nullable: false })
   updated_user: number

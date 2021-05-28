@@ -24,7 +24,7 @@ export default class PingService {
 
   async ping(server: FastifyInstance, filter?: any): Promise<any> {
     // console.log("Server :: ", server)
-    // console.log("Filter :: ", this.validateFilter(filter))
+    console.log("Filter :: ", this.validateFilter(filter))
 
     const repo = new TruckRepository()
     const data = await repo.findAll(server, this.validateFilter(filter))

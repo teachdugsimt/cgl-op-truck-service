@@ -21,9 +21,8 @@ const pingSchema: FastifySchema = {
     200: {
       type: 'object',
       properties: {
-        message: { type: 'array' },
+        data: { type: 'array' },
       },
-      additionalProperties: false
     }
   }
 }
