@@ -1,4 +1,4 @@
 export * from './dtb-truck.entity';
-export * from './dtb-truck-photo.entity'
+export * from './dtb-truck-working-zone.entity'
 export * from './dtb-user.entity'
-export * from './dtb-way-bill.entity'
+export * from './vw_truck_list.entity'

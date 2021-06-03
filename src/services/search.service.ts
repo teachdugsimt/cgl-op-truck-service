@@ -49,7 +49,7 @@ export default class SearchService {
       data: data[0],
       totalElements: data[1],
       size: rowsPerPage,
-      numberOfElements: data[0].length,
+      numberOfElements: data[0].length ?? 0,
       currentPage: page,
       totalPages: Math.ceil(data[1] / (+rowsPerPage))
     }

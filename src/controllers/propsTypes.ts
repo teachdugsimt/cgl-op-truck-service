@@ -1,3 +1,4 @@
+import { DtbTruck } from '../models'
 export interface TruckList {
   truckAmount?: number | undefined
   truckTypes?: number | undefined
@@ -38,4 +39,14 @@ export interface TruckFilter {
   sortBy?: string | undefined
   truckTypes?: Array<number>
   workingZones?: Array<number>
+}
+
+
+export interface TruckListResponse {
+  data: DtbTruck[]
+  totalElements: number
+  size: number
+  numberOfElements: number
+  currentPage: number
+  totalPages: number
 }

@@ -1,21 +1,20 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from "typeorm";
-// import { DtbTruck } from "./DtbTruck";
+import { Column, Entity, Index, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
+import { DtbTruck } from './dtb-truck.entity'
 
-@Index("dtb_truck_photo_pkey", ["id"], { unique: true })
-@Entity("dtb_truck_photo", { schema: "public" })
-export class DtbTruckPhoto {
+@Index("dtb_truck_working_zone_pkey", ["id"], { unique: true })
+@Entity("dtb_truck_working_zone", { schema: "public" })
+export class DtbTruckWorkingZone {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
 
-  @Column("character varying", { name: "photo_name", length: 255 })
-  photoName: string;
+  @Column("integer", { name: "truck_id" })
+  truck_id: number;
+
+  @Column("integer", { name: "region", nullable: true })
+  region: number | null;
+
+  @Column("integer", { name: "province", nullable: true })
+  province: number | null;
 
   @Column("integer", { name: "version", default: () => "0" })
   version: number;
@@ -53,10 +52,6 @@ export class DtbTruckPhoto {
   @Column("boolean", { name: "is_deleted", default: () => "false" })
   isDeleted: boolean;
 
-  @Column("integer", { name: "type", nullable: true })
-  type: number | null;
-
-  // @ManyToOne(() => DtbTruck, (dtbTruck) => dtbTruck.dtbTruckPhotos)
-  // @JoinColumn([{ name: "truck_id", referencedColumnName: "id" }])
-  // truck: DtbTruck;
+  // @ManyToOne(type => DtbTruck, truck => truck.workzone)
+  // workzone: DtbTruck;
 }

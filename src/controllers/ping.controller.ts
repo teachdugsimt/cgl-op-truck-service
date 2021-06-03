@@ -5,8 +5,7 @@ import SearchService from '../services/search.service';
 import pingSchema from './ping.schema';
 import searchSchema from './search.schema';
 import { DtbTruck } from '../models'
-import { TruckFilter } from './propsTypes'
-import { Connection } from 'typeorm'
+import { TruckFilter, TruckListResponse } from './propsTypes'
 @Controller({ route: '/api/v1/truck' })
 export default class PingController {
 
@@ -38,11 +37,11 @@ export default class PingController {
       schema: searchSchema
     },
   })
-  async searchTruckHandler(req: FastifyRequest<{ Body: TruckFilter }>, reply: FastifyReply): Promise<{ data: DtbTruck[] }> {
+  async searchTruckHandler(req: FastifyRequest<{ Body: TruckFilter }>, reply: FastifyReply): Promise<TruckListResponse> {
     try {
       const response = await this.searchService?.search(PingController.instance, req.body)
       return { ...response }
-   
+
     } catch (err) {
       console.log("Raw Erorr Controller : ", err)
       return err
