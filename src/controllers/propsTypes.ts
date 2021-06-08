@@ -1,4 +1,4 @@
-import { DtbTruck } from '../models'
+import { VwTruckList } from '../models'
 export interface TruckList {
   truckAmount?: number | undefined
   truckTypes?: number | undefined
@@ -43,7 +43,7 @@ export interface TruckFilter {
 
 
 export interface TruckListResponse {
-  data: DtbTruck[]
+  data: VwTruckList[]
   totalElements: number
   size: number
   numberOfElements: number

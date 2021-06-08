@@ -24,13 +24,44 @@ export default class SearchService {
       realPage = 0;
       page = 1;
     }
+
+    let tempString1: string
+    let filterTruck: string = ''
+    if (truckTypes && Array.isArray(truckTypes) && truckTypes.length > 0) {
+      tempString1 = JSON.stringify(truckTypes)
+      filterTruck = tempString1.slice(1, tempString1.length - 1)
+    }
+
+
+    let provinceFilterString: string = ""
+    if (workingZones && Array.isArray(workingZones) && workingZones.length > 0) {
+      workingZones.map((e, i) => {
+        if (workingZones && workingZones.length > 1 && i == 0) {
+          provinceFilterString += `("VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]' or `
+        } else if (workingZones && i == workingZones.length - 1) {
+          provinceFilterString += `"VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]')`
+        } else {
+          provinceFilterString += `"VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]' or `
+        }
+      })
+    } else {
+      provinceFilterString = `"VwTruckList"."work_zone"::jsonb @> '[]'`
+    }
+
+    console.log("Filter Province :: ")
+
+    const finalFilter: string = filterTruck ? `"VwTruckList"."truck_type" in (${filterTruck}) and ${provinceFilterString}`
+      : `${provinceFilterString}`
+    console.log("FinalFilter on  service :: ", finalFilter)
+
     const findOptions: any = {
       take: realTake,
       skip: realPage,
-      where: [],
+      // where: `"VwTruckList"."work_zone"::TEXT like '%"province" : 1%'`
+      where: finalFilter
+      // where: [{ '' }],
     };
-    if (truckTypes && truckTypes.length) truckTypes.map(e => findOptions.where.push({ truck_type: e }))
-    // if (workingZones && workingZones.length) workingZones.map(e => findOptions.where.push({ workingZones: e }))
+    // if (truckTypes && truckTypes.length) truckTypes.map(e => findOptions.where.push({ truck_type: e }))
 
     // var lambda = new aws.Lambda({region: 'ap-southeast-1'});
     // var params = {
