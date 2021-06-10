@@ -41,7 +41,7 @@ export default class PingController {
     try {
       const response = await this.searchService?.search(PingController.instance, req.body)
       return { ...response }
-
+      
     } catch (err) {
       console.log("Raw Erorr Controller : ", err)
       return err
