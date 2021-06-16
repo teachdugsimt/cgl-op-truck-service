@@ -1,8 +1,7 @@
 import {
   Index, Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn,
-  OneToMany
 } from "typeorm";
-import { DtbTruckWorkingZone } from './dtb-truck-working-zone.entity'
+// import { DtbTruckWorkingZone } from './dtb-truck-working-zone.entity'
 
 @Index("dtb_truck_pkey", ["id"], { unique: true })
 @Entity("dtb_truck", { schema: "public" })
@@ -86,9 +85,5 @@ export class DtbTruck {
 
   @Column({ type: 'int4', nullable: false })
   stall_height: number
-
-  // @OneToMany(type => DtbTruckWorkingZone, workzone => workzone.truck_id) // note: we will create author property in the Photo class below
-  // workzone: DtbTruckWorkingZone[];
-
 
 }
