@@ -1,17 +1,22 @@
 import { Service, Initializer, Destructor } from 'fastify-decorators';
 import TruckRepository from '../repositories/truck-repository'
 import { FastifyInstance } from 'fastify';
-import { TruckFilter } from '../controllers/propsTypes'
+import { TruckFilterGet } from '../controllers/propsTypes'
 import * as aws from "aws-sdk"
+import { FindManyOptions } from 'typeorm';
+
 @Service()
-export default class SearchService {
+export default class SearchServiceGet {
   @Initializer()
   async init(): Promise<void> {
   }
 
-  async search(server: FastifyInstance, body: TruckFilter): Promise<any> {
-    console.log("Filter :: ", body)
-    let { rowsPerPage, page, truckTypes, workingZones } = body;
+  async search(server: FastifyInstance, query: TruckFilterGet): Promise<any> {
+    console.log("Filter :: ", query)
+    let { rowsPerPage, page, truckTypes: tt, workingZones: wr, descending } = query;
+    const truckTypes = tt && typeof tt == 'string' ? JSON.parse(tt) : []
+    const workingZones = wr && typeof wr == 'string' ? JSON.parse(wr) : []
+
     let realPage: number;
     let realTake: number;
     if (rowsPerPage) realTake = +rowsPerPage;
@@ -38,9 +43,9 @@ export default class SearchService {
       if (workingZones.length == 1) provinceFilterString += `  ( "VwTruckList"."work_zone"::jsonb @> '[{"province":${workingZones[0]}}]' ) `
       else workingZones.map((e, i) => {
         if (workingZones && workingZones.length > 1 && i == 0) {
-          provinceFilterString += ` ( "VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]' or `
+          provinceFilterString += `("VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]' or `
         } else if (workingZones && i == workingZones.length - 1) {
-          provinceFilterString += `"VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]' ) `
+          provinceFilterString += `"VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]')`
         } else {
           provinceFilterString += `"VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]' or `
         }
@@ -55,12 +60,13 @@ export default class SearchService {
       : `${provinceFilterString}`
     console.log("FinalFilter on  service :: ", finalFilter)
 
-    const findOptions: any = {
+    const findOptions: FindManyOptions = {
       take: realTake,
       skip: realPage,
-      // where: `"VwTruckList"."work_zone"::TEXT like '%"province" : 1%'`
-      where: finalFilter
-      // where: [{ '' }],
+      where: finalFilter,
+      order: {
+        id: descending ? "DESC" : "ASC"
+      },
     };
     // if (truckTypes && truckTypes.length) truckTypes.map(e => findOptions.where.push({ truck_type: e }))
 

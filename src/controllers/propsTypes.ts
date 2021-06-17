@@ -40,6 +40,14 @@ export interface TruckFilter {
   truckTypes?: Array<number>
   workingZones?: Array<number>
 }
+export interface TruckFilterGet {
+  descending?: boolean | undefined
+  page?: number | string
+  rowsPerPage?: number | string
+  sortBy?: string | undefined
+  truckTypes?: string | undefined
+  workingZones?: string | undefined
+}
 
 
 export interface TruckListResponse {

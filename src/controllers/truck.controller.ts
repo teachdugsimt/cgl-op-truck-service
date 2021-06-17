@@ -2,11 +2,12 @@ import { FastifyReply, FastifyRequest, FastifyInstance, FastifySchema } from 'fa
 import { Controller, GET, POST, getInstanceByToken, FastifyInstanceToken } from 'fastify-decorators';
 import PingService from '../services/ping.service';
 import SearchService from '../services/search.service';
+import SearchServiceGet from '../services/search-get.service';
 import TruckService from '../services/truck.service';
 import { TruckSchema, TruckFilterSchema } from './truck.schema';
-import searchSchema from './search.schema';
+import searchSchema, { searchGetSchema } from './search.schema';
 import { DtbTruck } from '../models'
-import { TruckFilter, TruckListResponse } from './propsTypes'
+import { TruckFilter, TruckListResponse, TruckFilterGet } from './propsTypes'
 @Controller({ route: '/api/v1/trucks' })
 export default class PingController {
 
@@ -14,6 +15,7 @@ export default class PingController {
   private pingService = getInstanceByToken<PingService>(PingService);
   private searchService = getInstanceByToken<SearchService>(SearchService);
   private truckService = getInstanceByToken<TruckService>(TruckService);
+  private searchServiceGet = getInstanceByToken<SearchServiceGet>(SearchServiceGet);
 
   @GET({
     url: '/mobile',
@@ -52,7 +54,7 @@ export default class PingController {
   }
 
   @POST({
-    url: '/list',
+    url: '/me',
     options: {
       schema: searchSchema
     },
@@ -60,6 +62,23 @@ export default class PingController {
   async searchTruckHandler(req: FastifyRequest<{ Body: TruckFilter }>, reply: FastifyReply): Promise<TruckListResponse> {
     try {
       const response = await this.searchService?.search(PingController.instance, req.body)
+      return { ...response }
+
+    } catch (err) {
+      console.log("Raw Erorr Controller : ", err)
+      return err
+    }
+  }
+
+  @GET({
+    url: '/me',
+    options: {
+      schema: searchGetSchema
+    },
+  })
+  async searchGetTruckHandler(req: FastifyRequest<{ Querystring: TruckFilterGet }>, reply: FastifyReply): Promise<TruckListResponse> {
+    try {
+      const response = await this.searchServiceGet?.search(PingController.instance, req.query)
       return { ...response }
 
     } catch (err) {
