@@ -54,7 +54,7 @@ export default class PingController {
   }
 
   @POST({
-    url: '/me',
+    url: '/',
     options: {
       schema: searchSchema
     },
@@ -71,7 +71,7 @@ export default class PingController {
   }
 
   @GET({
-    url: '/me',
+    url: '/',
     options: {
       schema: searchGetSchema
     },
