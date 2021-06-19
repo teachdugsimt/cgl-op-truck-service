@@ -1,8 +1,8 @@
 import { Column, Entity, Index, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 import { DtbTruck } from './dtb-truck.entity'
 
-@Index("dtb_truck_working_zone_pkey", ["id"], { unique: true })
-@Entity("dtb_truck_working_zone", { schema: "public" })
+@Index("truck_working_zone_pkey", ["id"], { unique: true })
+@Entity("truck_working_zone", { schema: "public" })
 export class DtbTruckWorkingZone {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;

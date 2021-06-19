@@ -14,7 +14,7 @@ export default fp(async server => {
     server.decorate('db', {
       truck: connection.getRepository(DtbTruck),
       truckWorkingZone: connection.getRepository(DtbTruckWorkingZone),
-      user: connection.getRepository(DtbUser),
+      // user: connection.getRepository(DtbUser),
       vwTruck:  connection.getRepository(VwTruckList)
     });
     console.timeEnd()
