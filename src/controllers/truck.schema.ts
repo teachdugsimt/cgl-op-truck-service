@@ -57,13 +57,51 @@ const truckProperties = {
 }
 export const TruckSchema: FastifySchema = {
   params: {
-    id: { type: 'number' },
+    id: { type: 'string' },
   },
   response: {
     200: {
       type: 'object',
       properties: {
         data: { type: "object", properties: truckProperties },
+      },
+    }
+  }
+}
+
+
+const modelJoinTruck = {
+  id: { type: 'string' },
+  approveStatus: { type: 'string' },
+  loadingWeight: { type: 'number' },
+  registrationNumber: { type: 'array', nullable: true },
+  stallHeight: { type: 'string' },
+  tipper: { type: 'boolean' },
+  truckType: { type: "number" },
+  createdAt: { type: "string", format: "date-time" },
+  updatedAt: { type: "string", format: "date-time" },
+  quotationNumber: { type: 'number' },
+  workingZones: { type: 'array' },
+  owner: {
+    type: 'object', properties: {
+      id: { type: "number" },
+      fullName: { type: 'string' },
+      email: { type: 'string' },
+      mobileNo: { type: 'string' },
+      avatar: { object: null },
+      userId: { type: 'string' },
+    }
+  }
+}
+export const TruckOne: FastifySchema = {
+  params: {
+    id: { type: 'string' },
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        data: { type: "object", properties: modelJoinTruck },
       },
     }
   }

@@ -109,4 +109,52 @@ const runTruckWorkingZone = async () => {
 
 };
 
-runTruckWorkingZone()
+
+const TruckPhotoModel = sql.define({
+  name: "truck_photo",
+  columns: ["id", "truck_id", "photo_name", "is_deleted", "type",
+    "created_at", "updated_at", "created_user", "updated_user"]
+})
+
+const runTruckPhoto = async () => {
+  const client = new Pool({
+    host: 'cgl-dev-db.ccyrpfjhgi1v.ap-southeast-1.rds.amazonaws.com',
+    user: 'postgres',
+    password: '.9^Piv-.KlzZhZm.MU7vXZU7yE9I-4',
+    database: 'cargolink',
+    port: 5432,
+  });
+
+  const clientNew = new Pool({
+    host: 'cgl-dev-db.ccyrpfjhgi1v.ap-southeast-1.rds.amazonaws.com',
+    user: 'postgres',
+    password: '.9^Piv-.KlzZhZm.MU7vXZU7yE9I-4',
+    database: 'truck_service',
+    port: 5432,
+  });
+
+  const connect = await client.connect();
+  const connectNew = await clientNew.connect();
+
+  // type : array
+  const { rows: oldTruckWorkingZone } = await connect.query(`SELECT * FROM dtb_truck_photo;`);
+
+  // type :  array
+  const newTruckWorking = oldTruckWorkingZone.map((tr) => ({
+    "id": tr["id"],
+    "truck_id": tr["truck_id"],
+    "photo_name": tr["photo_name"],
+    "is_deleted": tr["is_deleted"],
+    "type": tr["type"],
+    "created_at": tr["created_at"],
+    "updated_at": tr["updated_at"],
+    "created_user": tr["created_user"],
+    "updated_user": tr["updated_user"]
+  }));
+
+  const rowQueryUserRole = TruckPhotoModel.insert(newTruckWorking).toQuery();
+  await connectNew.query(rowQueryUserRole);
+
+};
+
+runTruckPhoto()

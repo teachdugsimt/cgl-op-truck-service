@@ -2,7 +2,6 @@ import { Service, Initializer, Destructor } from 'fastify-decorators';
 import TruckRepository from '../repositories/truck-repository'
 import { FastifyInstance } from 'fastify';
 import { TruckFilter } from '../controllers/propsTypes'
-import * as aws from "aws-sdk"
 @Service()
 export default class SearchService {
   @Initializer()
@@ -46,7 +45,7 @@ export default class SearchService {
         }
       })
     } else {
-      provinceFilterString = `"VwTruckList"."work_zone"::jsonb @> '[]'`
+      provinceFilterString = ``
     }
 
     console.log("Filter Province :: ")
@@ -62,18 +61,6 @@ export default class SearchService {
       where: finalFilter
       // where: [{ '' }],
     };
-    // if (truckTypes && truckTypes.length) truckTypes.map(e => findOptions.where.push({ truck_type: e }))
-
-    // var lambda = new aws.Lambda({region: 'ap-southeast-1'});
-    // var params = {
-    //   FunctionName: "arn:aws:lambda:ap-southeast-1:911597493577:function:test-invoke",
-    //   Payload: JSON.stringify({
-    //     "transaction_code": "6931",
-    //     "partner_abbreviation": "registerBlaz5App"
-    //   }),
-    // };
-    // const response = await lambda.invoke(params).promise()
-    // console.log("Response test invoke :: ", response)
 
     const repo = new TruckRepository()
     const data = await repo.findAllJoinTruck(server, findOptions)

@@ -32,6 +32,69 @@ export interface TruckList {
   }
 }
 
+export interface Truck {
+  carrierId: number
+  truckTypes: number
+  loadingWeight?: number | null
+  stallHeight: string | null
+  tipper?: boolean | null
+  registrationNumber: string[] | null
+  truckPhotos: {
+    front: string | null
+    back: string | null
+    left: string | null
+    right: string | null
+  } | null
+  workingZones: Array<{
+    region: number,
+    province?: number | null
+  }> | null
+}
+
+
+export interface TruckPhotoUpdate {
+  front: {
+    url: string | null
+    action: string
+  } | null
+  back: {
+    url: string | null
+    action: string
+  } | null
+  left: {
+    url: string | null
+    action: string
+  } | null
+  right: {
+    url: string | null
+    action: string
+  } | null
+}
+export interface UpdateTruck {
+  // id: number
+  // carrierId: number
+  truckTypes: number
+  loadingWeight?: number | null
+  stallHeight: string | null
+  tipper?: boolean | null
+  registrationNumber: string[] | null
+  truckPhotos: TruckPhotoUpdate
+  workingZones: Array<{
+    region: number,
+    province?: number | null
+  }> | null
+}
+
+export interface RawUpdateTruck extends UpdateTruck {
+  id: string 
+  carrierId: string  
+}
+
+export interface ParseUpdateTruck extends UpdateTruck {
+  id: number
+  carrierId: number 
+}
+
 export interface TruckFilter {
   descending?: boolean | undefined
   page?: number | string
