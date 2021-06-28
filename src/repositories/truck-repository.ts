@@ -1,4 +1,4 @@
-import { DtbTruck, DtbTruckWorkingZone, TruckPhoto, VwTruckList } from '../models'
+import { DtbTruck, DtbTruckWorkingZone, TruckPhoto, VwTruckList, VwTruckDetails } from '../models'
 import { DataTypeNotSupportedError, In, Repository } from 'typeorm'
 import { Truck, ParseUpdateTruck, TruckPhotoUpdate } from '../controllers/propsTypes'
 import _ from "lodash";
@@ -35,13 +35,32 @@ export default class TruckRepository {
 
   async findOneById(server: any, id: string | number) {
     try {
-      let repository: Repository<DtbTruck> = await server?.db?.truck
-      // let truck_list = await repository.findOne(Number(id));
+      let repository: any = await server?.db?.vwTruckDetails
 
-      let truck_list = await repository.findOne(Number(id));
-      console.log("data in repo :: ", truck_list)
-      
-      return truck_list
+      let truck_list: any = await repository.findOne({ id });
+      console.log("Raw data query : ", truck_list)
+
+      const parseData: any = JSON.parse(JSON.stringify(truck_list));
+      let modelTruck: any = {
+        front: null,
+        back: null,
+        left: null,
+        right: null,
+      }
+      parseData['truckPhotos'] = modelTruck
+
+      if (truck_list.truckPhotos && truck_list.truckPhotos.length) {
+        truck_list.truckPhotos.map((e: any) => {
+          if (e.left) modelTruck.left = e.left
+          if (e.right) modelTruck.right = e.right
+          if (e.front) modelTruck.front = e.front
+          if (e.back) modelTruck.back = e.back
+        })
+      }
+      parseData.truckPhotos = modelTruck
+
+      console.log("Parse truck  Photos :: ", parseData)
+      return parseData
     } catch (error) {
       console.log("Error repository find  with id :: ", error)
       throw error

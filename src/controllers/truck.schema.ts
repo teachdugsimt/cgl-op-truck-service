@@ -80,16 +80,14 @@ const modelJoinTruck = {
   truckType: { type: "number" },
   createdAt: { type: "string", format: "date-time" },
   updatedAt: { type: "string", format: "date-time" },
-  quotationNumber: { type: 'number' },
+  quotationNumber: { type: 'number', nullable: true },
   workingZones: { type: 'array' },
-  owner: {
+  truckPhotos: {
     type: 'object', properties: {
-      id: { type: "number" },
-      fullName: { type: 'string' },
-      email: { type: 'string' },
-      mobileNo: { type: 'string' },
-      avatar: { object: null },
-      userId: { type: 'string' },
+      front: { type: 'string' },
+      back: { type: 'string' },
+      left: { type: 'string' },
+      right: { type: 'string' },
     }
   }
 }

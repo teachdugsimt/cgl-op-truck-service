@@ -44,7 +44,7 @@ export class VwTruckList {
   loadingWeight: number
 
   @ViewColumn({ name: "registration_number" })
-  registrationNumber: Array<number>
+  registrationNumber: Array<string>
 
   @ViewColumn({ name: "stall_height" })
   stallHeight: number
