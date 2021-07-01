@@ -113,6 +113,7 @@ export const searchGetSchema: FastifySchema = {
       rowsPerPage: { type: 'number', nullable: true },
       sortBy: { type: 'string', nullable: true },
       truckTypes: { type: 'string', nullable: true },
+      status: { type: 'number', nullable: true },
       workingZones: { type: 'string', nullable: true },
     }
   },
@@ -175,6 +176,7 @@ export const getMySchema: FastifySchema = {
       rowsPerPage: { type: 'number', nullable: true },
       sortBy: { type: 'string', nullable: true },
       truckTypes: { type: 'string', nullable: true },
+      status: { type: 'number', nullable: true },
       workingZones: { type: 'string', nullable: true },
     }
   },

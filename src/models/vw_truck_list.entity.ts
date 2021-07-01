@@ -1,9 +1,9 @@
+import { RSA_X931_PADDING } from "constants";
 import { ViewEntity, ViewColumn, AfterLoad } from "typeorm";
 import Security from 'utility-layer/dist/security'
 // import Security from 'utility-layer/src/helper/security'
 
 const util = new Security();
-
 @ViewEntity({
   expression: `
   SELECT truck.id,
@@ -14,7 +14,10 @@ const util = new Security();
     truck.loading_weight,
     string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
     truck.stall_height,
-    (CASE WHEN COUNT(qu) > 0 THEN COUNT(qu) END) AS quotation_number,
+        CASE
+            WHEN count(qu.*) > 0 THEN count(qu.*)
+            ELSE NULL::bigint
+        END AS quotation_number,
     truck.is_tipper AS tipper,
     truck.truck_type,
     truck.created_at,
@@ -23,7 +26,7 @@ const util = new Security();
     json_build_object('id', usr.id, 'fullName', usr.fullname, 'email', usr.email, 'mobileNo', usr.phone_number, 'avatar', json_build_object('object', usr.avatar)) AS owner,
         CASE
             WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
-            ELSE NULL::json
+            ELSE coalesce('[]'::json)
         END AS work_zone
    FROM truck truck
      LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id

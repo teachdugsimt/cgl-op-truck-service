@@ -109,6 +109,7 @@ export interface TruckFilterGet {
   rowsPerPage?: number | string
   sortBy?: string | undefined
   truckTypes?: string | undefined
+  status?: string | undefined
   workingZones?: string | undefined
 }
 

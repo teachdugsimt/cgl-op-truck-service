@@ -331,13 +331,13 @@ export default class TruckRepository {
     try {
       console.log("Filter :: on repo :: ", filter)
       // let repository: any = await server?.db?.truck
-      let repository: any = await server?.db?.vwTruck
+      let repository: any = await server?.db?.vwMyTruck
       let truck_list = await repository.findAndCount(filter);
 
-      console.log("Response in repository :: ", JSON.parse(JSON.stringify(truck_list)))
+      console.log("My truck repository :: ", JSON.parse(JSON.stringify(truck_list)))
       return truck_list
     } catch (error) {
-      console.log("Error repository :: ", error)
+      console.log("Error My Truck repository :: ", error)
       throw error
     }
   }

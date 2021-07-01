@@ -20,24 +20,6 @@ export default class PingController {
   private searchServiceGet = getInstanceByToken<SearchServiceGet>(SearchServiceGet);
 
   @GET({
-    url: '/mobile',
-    options: {
-      schema: TruckFilterSchema
-    },
-  })
-  async pingHandler(req: FastifyRequest, reply: FastifyReply): Promise<{ data: DtbTruck[] }> {
-    try {
-      console.log("Request params :: ", req.query)
-      const data = await this.pingService?.ping(PingController.instance, req.query || null)
-      // console.log("Final data : ", JSON.parse(JSON.stringify(data)))
-      return { data }
-    } catch (err) {
-      console.log("Raw Erorr Controller : ", err)
-      return err
-    }
-  }
-
-  @GET({
     url: '/:id',
     options: {
       schema: TruckOne
@@ -83,7 +65,7 @@ export default class PingController {
     try {
       const validateCarrierId: any = req.body
       if (validateCarrierId.carrierId && validateCarrierId.carrierId.match(/^[0-9A-Z]{8,15}$/)) {
-        validateCarrierId.carrierId= util.decodeUserId(validateCarrierId.carrierId)
+        validateCarrierId.carrierId = util.decodeUserId(validateCarrierId.carrierId)
       }
       const result = await this.truckService?.createTruck(PingController.instance, req.body)
       console.log("Result create new truck  :: ", result)
@@ -148,8 +130,9 @@ export default class PingController {
       console.log("HEADERS :: ", req.headers)
       const token = req.headers.authorization
       const rawObject = util.getUserIdByToken(token)
+      console.log("Raw  object  :: ", rawObject)
       const userId = util.decodeUserId(rawObject)
-      // console.log("Real User id : ", userId)
+      console.log("Real User id : ", userId)
       // const userId = 7
 
       const response = await this.searchServiceGet?.searchMe(PingController.instance, req.query, userId)

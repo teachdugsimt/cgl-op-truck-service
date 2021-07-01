@@ -2,9 +2,11 @@ import { Service, Initializer, Destructor } from 'fastify-decorators';
 import TruckRepository from '../repositories/truck-repository'
 import { FastifyInstance } from 'fastify';
 import { TruckFilterGet } from '../controllers/propsTypes'
-import * as aws from "aws-sdk"
 import { FindManyOptions } from 'typeorm';
 
+const enum_status = {
+  0: 'Pending', 1: 'Approved'
+}
 @Service()
 export default class SearchServiceGet {
   @Initializer()
@@ -13,7 +15,7 @@ export default class SearchServiceGet {
 
   async search(server: FastifyInstance, query: TruckFilterGet): Promise<any> {
     console.log("Filter :: ", query)
-    let { rowsPerPage, page, truckTypes: tt, workingZones: wr, descending, sortBy = "id" } = query;
+    let { rowsPerPage, page, truckTypes: tt, workingZones: wr, descending, sortBy = "id", status } = query;
     const truckTypes = tt && typeof tt == 'string' ? JSON.parse(tt) : []
     const workingZones = wr && typeof wr == 'string' ? JSON.parse(wr) : []
 
@@ -38,26 +40,30 @@ export default class SearchServiceGet {
     }
 
 
-    let provinceFilterString: string = ""
+    let filterProvince: string = ""
     if (workingZones && Array.isArray(workingZones) && workingZones.length > 0) {
-      if (workingZones.length == 1) provinceFilterString += `  ( "VwTruckList"."work_zone"::jsonb @> '[{"province":${workingZones[0]}}]' ) `
+      if (workingZones.length == 1) filterProvince += `  ( "VwTruckList"."work_zone"::jsonb @> '[{"province":${workingZones[0]}}]' ) `
       else workingZones.map((e, i) => {
         if (workingZones && workingZones.length > 1 && i == 0) {
-          provinceFilterString += `("VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]' or `
+          filterProvince += `("VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]' or `
         } else if (workingZones && i == workingZones.length - 1) {
-          provinceFilterString += `"VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]')`
+          filterProvince += `"VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]')`
         } else {
-          provinceFilterString += `"VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]' or `
+          filterProvince += `"VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]' or `
         }
       })
     } else {
-      provinceFilterString = ``
+      filterProvince = ``
     }
 
-    console.log("Filter Province :: ")
 
-    const finalFilter: string = filterTruck ? `"VwTruckList"."truck_type" in (${filterTruck}) and ${provinceFilterString}`
-      : `${provinceFilterString}`
+    const filterTruckFinal = filterTruck ? `"VwTruckList"."truck_type" in (${filterTruck}) ` : ``
+    const filterStatus = (status != undefined || status != null) ? `${`"VwTruckList"."approve_status" = '${enum_status[status]}'`}` : ``
+
+    const finalFilter: string = filterTruck ? `${filterTruckFinal} ${filterProvince ? `and ${filterProvince}` : ``} ${filterStatus ? `and ${filterStatus}` : ``}`
+      : `${filterProvince} ${filterProvince && filterStatus ? `and ${filterStatus}` : filterStatus}`
+
+
     console.log("FinalFilter on  service :: ", finalFilter)
 
     const findOptions: FindManyOptions = {
@@ -86,9 +92,9 @@ export default class SearchServiceGet {
 
 
 
-  async searchMe(server: FastifyInstance, query: TruckFilterGet, carrierId: number = 7): Promise<any> {
+  async searchMe(server: FastifyInstance, query: TruckFilterGet, carrierId: number): Promise<any> {
     console.log("Filter :: ", query)
-    let { rowsPerPage, page, truckTypes: tt, workingZones: wr, descending, sortBy = 'id' } = query;
+    let { rowsPerPage, page, truckTypes: tt, workingZones: wr, descending, sortBy = 'id', status } = query;
     const truckTypes = tt && typeof tt == 'string' ? JSON.parse(tt) : []
     const workingZones = wr && typeof wr == 'string' ? JSON.parse(wr) : []
 
@@ -113,26 +119,28 @@ export default class SearchServiceGet {
     }
 
 
-    let provinceFilterString: string = ""
+    let filterProvince: string = ""
     if (workingZones && Array.isArray(workingZones) && workingZones.length > 0) {
-      if (workingZones.length == 1) provinceFilterString += `  ( "VwTruckList"."work_zone"::jsonb @> '[{"province":${workingZones[0]}}]' ) `
+      if (workingZones.length == 1) filterProvince += `  ( "VwMyTruck"."work_zone"::jsonb @> '[{"province":${workingZones[0]}}]' ) `
       else workingZones.map((e, i) => {
         if (workingZones && workingZones.length > 1 && i == 0) {
-          provinceFilterString += `(""VwTruckList"."carrier_id" in (${carrierId}) and VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]' or `
+          filterProvince += `("VwMyTruck"."work_zone"::jsonb @> '[{"province":${e}}]' or `
         } else if (workingZones && i == workingZones.length - 1) {
-          provinceFilterString += `"VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]')`
+          filterProvince += `"VwMyTruck"."work_zone"::jsonb @> '[{"province":${e}}]')`
         } else {
-          provinceFilterString += `"VwTruckList"."work_zone"::jsonb @> '[{"province":${e}}]' or `
+          filterProvince += `"VwMyTruck"."work_zone"::jsonb @> '[{"province":${e}}]' or `
         }
       })
     } else {
-      provinceFilterString = `"VwTruckList"."carrier_id" in (${carrierId})`
+      filterProvince = ``
     }
 
     console.log("Filter Province :: ")
 
-    const finalFilter: string = filterTruck ? `"VwTruckList"."truck_type" in (${filterTruck}) and "VwTruckList"."carrier_id" in (${carrierId}) and ${provinceFilterString}`
-      : `${provinceFilterString}`
+    const filterCarrierId = carrierId ? `"VwMyTruck"."carrier_id" in (${carrierId})` : ``
+    const filterTruckFinal = filterTruck ? `"VwMyTruck"."truck_type" in (${filterTruck})` : ``
+    const finalFilter: string = filterTruckFinal ? `${filterTruckFinal} ${filterCarrierId ? `and ${filterCarrierId}` : ``} ${filterProvince ? `and ${filterProvince}` : ``}`
+      : `${filterProvince} ${filterProvince && filterCarrierId ? ` and ${filterCarrierId}` : filterCarrierId}`
     console.log("FinalFilter on  service :: ", finalFilter)
 
     const findOptions: FindManyOptions = {
@@ -142,8 +150,6 @@ export default class SearchServiceGet {
       order: {
         [`${sortBy}`]: descending ? "DESC" : "ASC"
       },
-      select: ['id', 'approveStatus', 'createdAt', 'loadingWeight', 'owner', 'quotationNumber',
-        'registrationNumber', 'stallHeight', 'tipper', 'truckType', 'updatedAt', 'workingZones']
     };
 
     const repo = new TruckRepository()
