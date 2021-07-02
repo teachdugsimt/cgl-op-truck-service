@@ -39,30 +39,17 @@ const inputUpdateTruck = {
     registrationNumber: { type: 'array', items: { type: 'string' } },
     truckPhotos: {
       type: 'object', properties: {
-
         front: {
-          type: 'object', properties: {
-            url: { type: 'string', nullable: true },
-            action: { type: 'string' }
-          }
+          type: 'object', nullable: true
         },
         back: {
-          type: 'object', properties: {
-            url: { type: 'string', nullable: true },
-            action: { type: 'string' }
-          }
+          type: 'object', nullable: true
         },
         left: {
-          type: 'object', properties: {
-            url: { type: 'string', nullable: true },
-            action: { type: 'string' }
-          }
+          type: 'object', nullable: true
         },
         right: {
-          type: 'object', properties: {
-            url: { type: 'string', nullable: true },
-            action: { type: 'string' }
-          }
+          type: 'object', nullable: true
         },
 
       }
