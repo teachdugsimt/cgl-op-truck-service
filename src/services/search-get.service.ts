@@ -71,7 +71,7 @@ export default class SearchServiceGet {
       skip: realPage,
       where: finalFilter,
       order: {
-        [`${sortBy}`]: descending ? "DESC" : "ASC"
+        [`${sortBy}`]: descending ? "ASC" : "DESC"
       },
     };
 
@@ -148,7 +148,7 @@ export default class SearchServiceGet {
       skip: realPage,
       where: finalFilter,
       order: {
-        [`${sortBy}`]: descending ? "DESC" : "ASC"
+        [`${sortBy}`]: descending ? "ASC" : "DESC"
       },
     };
 
