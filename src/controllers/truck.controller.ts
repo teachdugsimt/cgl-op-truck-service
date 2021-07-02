@@ -63,10 +63,10 @@ export default class PingController {
   })
   async searchTruckHandler(req: FastifyRequest<{ Body: Truck }>, reply: FastifyReply): Promise<any> {
     try {
-      const validateCarrierId: any = req.body
-      if (validateCarrierId.carrierId && validateCarrierId.carrierId.match(/^[0-9A-Z]{8,15}$/)) {
-        validateCarrierId.carrierId = util.decodeUserId(validateCarrierId.carrierId)
-      }
+      // const validateCarrierId: any = req.body
+      // if (validateCarrierId.carrierId && validateCarrierId.carrierId.match(/^[0-9A-Z]{8,15}$/)) {
+      //   validateCarrierId.carrierId = util.decodeUserId(validateCarrierId.carrierId)
+      // }
       const result = await this.truckService?.createTruck(PingController.instance, req.body)
       console.log("Result create new truck  :: ", result)
       return { data: result }

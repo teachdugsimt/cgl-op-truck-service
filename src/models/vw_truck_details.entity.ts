@@ -6,55 +6,41 @@ const util = new Security();
 
 @ViewEntity({
   expression: `
-  SELECT
-	truck.id,
-	CASE WHEN truck.approve_status = 0 THEN
-		'Pending'::text
-	ELSE
-		'Approved'::text
-	END AS approve_status,
-	truck.loading_weight,
-	string_to_array(truck.registration_number, ' ') AS registration_number,
-	truck.stall_height,
-	(
-		CASE WHEN COUNT(qu) > 0 THEN
-			NULL ELSE NULL
-		END) AS quotation_number,
-	truck.is_tipper AS tipper,
-	truck.truck_type,
-	truck.created_at,
-	truck.updated_at,
-	truck.carrier_id,
-	json_agg(json_build_object((
-		CASE WHEN tp.type = 1 THEN
-			'front'
-		WHEN tp.type = 2 THEN
-			'back'
-		WHEN tp.type = 3 THEN
-			'left'
-		WHEN tp.type = 4 THEN
-			'right'
-		WHEN tp.type IS NULL THEN
-			'left'
-		ELSE
-			''
-		END), tp.photo_name)) AS truck_photos,
-	CASE WHEN (array_agg(wr.region)) [1] IS NOT NULL THEN
-		json_agg(json_build_object('region', wr.region, 'province', wr.province))
-	ELSE
-		NULL::json
-	END AS work_zone
-FROM
-	truck truck
-	LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
-	LEFT JOIN truck_photo tp ON tp.truck_id = truck.id
-	LEFT JOIN dblink('cargolink'::text, 'SELECT id,order_id,truck_id FROM dtb_quotation_truck'::text) qu (id integer,
-		order_id integer,
-		truck_id integer) ON qu.truck_id = truck.id
-GROUP BY
-	truck.id,
-	tp.truck_id;
-
+  SELECT truck.id,
+  CASE
+      WHEN truck.approve_status = 0 THEN 'Pending'::text
+      ELSE 'Approved'::text
+  END AS approve_status,
+truck.loading_weight,
+string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+truck.stall_height,
+  CASE
+      WHEN count(qu.*) > 0 THEN NULL::text
+      ELSE NULL::text
+  END AS quotation_number,
+truck.is_tipper AS tipper,
+truck.truck_type,
+truck.created_at,
+truck.updated_at,
+truck.carrier_id,
+json_agg(json_build_object(
+  CASE
+      WHEN tp.type = 1 THEN 'front'::text
+      WHEN tp.type = 2 THEN 'back'::text
+      WHEN tp.type = 3 THEN 'left'::text
+      WHEN tp.type = 4 THEN 'right'::text
+      WHEN tp.type IS NULL THEN 'left'::text
+      ELSE ''::text
+  END, tp.photo_name)) AS truck_photos,
+  CASE
+      WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
+      ELSE COALESCE('[]'::json)
+  END AS work_zone
+FROM truck truck
+LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
+LEFT JOIN truck_photo tp ON tp.truck_id = truck.id
+LEFT JOIN dblink('cargolink'::text, 'SELECT id,order_id,truck_id FROM dtb_quotation_truck'::text) qu(id integer, order_id integer, truck_id integer) ON qu.truck_id = truck.id
+GROUP BY truck.id, tp.truck_id;
   `
 })
 export class VwTruckDetails {
