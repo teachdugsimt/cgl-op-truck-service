@@ -1,5 +1,5 @@
 import { DtbTruck, DtbTruckWorkingZone, TruckPhoto, VwTruckList, VwTruckDetails } from '../models'
-import { DataTypeNotSupportedError, In, Repository } from 'typeorm'
+import { DataTypeNotSupportedError, FindOneOptions, In, Repository } from 'typeorm'
 import { Truck, ParseUpdateTruck, TruckPhotoUpdate } from '../controllers/propsTypes'
 import _ from "lodash";
 import axios from 'axios'
@@ -36,7 +36,10 @@ export default class TruckRepository {
   async findOneById(server: any, id: string | number) {
     try {
       let repository: any = await server?.db?.vwTruckDetails
-
+      // const filterTest: FindOneOptions = {
+      //   where: [{ id }],
+      //   select: ['s', 'sa']
+      // }
       let truck_list: any = await repository.findOne({ id });
       console.log("Raw data query : ", truck_list)
 
@@ -101,7 +104,7 @@ export default class TruckRepository {
         loadingWeight: data.loadingWeight || 0,
         stallHeight: data.stallHeight || "LOW",
         isTipper: data.tipper || false,
-        truckType: data.truckTypes
+        truckType: data.truckType
       })
       console.log("Save Truck  data :: ", saveTruck)
 
@@ -209,7 +212,7 @@ export default class TruckRepository {
         loadingWeight: data.loadingWeight || 0,
         stallHeight: data.stallHeight || "LOW",
         isTipper: data.tipper || false,
-        truckType: data.truckTypes
+        truckType: data.truckType
       })
       console.log("SaveTruck : ", saveTruck)
 

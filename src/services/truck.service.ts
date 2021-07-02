@@ -25,8 +25,6 @@ export default class TruckService {
   }
 
   async updateTruck(server: FastifyInstance, data: ParseUpdateTruck): Promise<any> {
-    // console.log("Server :: ", server)
-    // console.log("Body Update truck : ", data)
     const repo = new TruckRepository()
     const result = await repo.updateTruck(server, data)
     return result

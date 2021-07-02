@@ -34,7 +34,7 @@ export interface TruckList {
 
 export interface Truck {
   carrierId: number
-  truckTypes: number
+  truckType: number
   loadingWeight?: number | null
   stallHeight: string | null
   tipper?: boolean | null
@@ -73,7 +73,7 @@ export interface TruckPhotoUpdate {
 export interface UpdateTruck {
   // id: number
   // carrierId: number
-  truckTypes: number
+  truckType: number
   loadingWeight?: number | null
   stallHeight: string | null
   tipper?: boolean | null
