@@ -1,7 +1,8 @@
-import { DtbTruck, DtbTruckWorkingZone, TruckPhoto, VwTruckList, VwTruckDetails } from '../models'
+import { DtbTruck, DtbTruckWorkingZone, TruckPhoto, FavoriteTruck } from '../models'
 import { DataTypeNotSupportedError, FindOneOptions, In, Repository } from 'typeorm'
 import { Truck, ParseUpdateTruck, TruckPhotoUpdate } from '../controllers/propsTypes'
 import _ from "lodash";
+import { FastifyInstance } from 'fastify';
 import axios from 'axios'
 import Utility from 'utility-layer/dist/security'
 const util = new Utility();
@@ -104,7 +105,8 @@ export default class TruckRepository {
         loadingWeight: data.loadingWeight || 0,
         stallHeight: data.stallHeight || "LOW",
         isTipper: data.tipper || false,
-        truckType: data.truckType
+        truckType: data.truckType,
+        createdUser: "" + data?.carrierId
       })
       console.log("Save Truck  data :: ", saveTruck)
 
@@ -212,7 +214,8 @@ export default class TruckRepository {
         loadingWeight: data.loadingWeight || 0,
         stallHeight: data.stallHeight || "LOW",
         isTipper: data.tipper || false,
-        truckType: data.truckType
+        truckType: data.truckType,
+        updatedUser: "" + data?.carrierId,
       })
       console.log("SaveTruck : ", saveTruck)
 
@@ -345,18 +348,38 @@ export default class TruckRepository {
     }
   }
 
-  // async testFindAll(server: any, filter: any = this._defaultFilter) {
-  //   try {
-  //     let repository: Repository<DtbTruck> = await server?.db?.truck
-  //     let truck_list = await repository.find({
-  //       relations: ['truck_working_zones']
-  //     });
-  //     return truck_list
-  //   } catch (error) {
-  //     console.log("Error repository :: ", error)
-  //     throw error
-  //   }
-  // }
+  async findFavoriteTruck(server: any, filter: any) {
+    try {
+      console.log("Filter :: on repo :: ", filter)
+      // let repository: any = await server?.db?.truck
+      let repository: any = await server?.db?.vwTruckFavorite
+      let truck_list = await repository.findAndCount(filter);
+
+      console.log("My favorite truck repository :: ", JSON.parse(JSON.stringify(truck_list)))
+      return truck_list
+    } catch (error) {
+      console.log("Error My Truck repository :: ", error)
+      throw error
+    }
+  }
+
+
+
+
+
+  async addFavoriteTruck(server: any, userId: number, truckId: number) {
+    try {
+      let repository: Repository<FavoriteTruck> = await server?.db.favoriteTruck
+      await repository.save({
+        userId, truckId,
+        createdUser: userId.toString(), updatedUser: userId.toString()
+      });
+      return true
+    } catch (error) {
+      console.log("Error My Truck repository :: ", error)
+      throw error
+    }
+  }
 
 }
 

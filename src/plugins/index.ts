@@ -2,7 +2,10 @@ import 'reflect-metadata';
 import fp from 'fastify-plugin';
 import { createConnection } from 'typeorm';
 // import config from '../config/ormconfig'
-import { DtbTruck, TruckPhoto, DtbTruckWorkingZone, VwTruckList, VwTruckDetails, VwMyTruck } from '../models';
+import {
+  DtbTruck, TruckPhoto, DtbTruckWorkingZone, VwTruckList, VwTruckDetails, VwMyTruck,
+  VwTruckFavorite, FavoriteTruck
+} from '../models';
 
 export default fp(async server => {
   try {
@@ -17,7 +20,9 @@ export default fp(async server => {
       truckPhoto: connection.getRepository(TruckPhoto),
       vwTruck: connection.getRepository(VwTruckList),
       vwTruckDetails: connection.getRepository(VwTruckDetails),
-      vwMyTruck: connection.getRepository(VwMyTruck)
+      vwMyTruck: connection.getRepository(VwMyTruck),
+      vwTruckFavorite: connection.getRepository(VwTruckFavorite),
+      favoriteTruck: connection.getRepository(FavoriteTruck),
     });
     console.timeEnd()
   } catch (error) {

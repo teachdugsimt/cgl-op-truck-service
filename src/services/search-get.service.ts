@@ -165,8 +165,63 @@ export default class SearchServiceGet {
     console.log("Data in search FINAL :: ", response_final)
     return response_final
   }
+  
 
 
+
+
+  async searchMyAll(server: FastifyInstance, query: TruckFilterGet, carrierId: number): Promise<any> {
+    console.log("Filter :: ", query)
+    let { truckTypes: tt, workingZones: wr, descending, sortBy = 'id', status } = query;
+    const truckTypes = tt && typeof tt == 'string' ? JSON.parse(tt) : []
+    const workingZones = wr && typeof wr == 'string' ? JSON.parse(wr) : []
+
+    let tempString1: string
+    let filterTruck: string = ''
+    if (truckTypes && Array.isArray(truckTypes) && truckTypes.length > 0) {
+      tempString1 = JSON.stringify(truckTypes)
+      filterTruck = tempString1.slice(1, tempString1.length - 1)
+    }
+
+    let filterProvince: string = ""
+    if (workingZones && Array.isArray(workingZones) && workingZones.length > 0) {
+      if (workingZones.length == 1) filterProvince += `  ( "VwMyTruck"."work_zone"::jsonb @> '[{"province":${workingZones[0]}}]' ) `
+      else workingZones.map((e, i) => {
+        if (workingZones && workingZones.length > 1 && i == 0) {
+          filterProvince += `("VwMyTruck"."work_zone"::jsonb @> '[{"province":${e}}]' or `
+        } else if (workingZones && i == workingZones.length - 1) {
+          filterProvince += `"VwMyTruck"."work_zone"::jsonb @> '[{"province":${e}}]')`
+        } else {
+          filterProvince += `"VwMyTruck"."work_zone"::jsonb @> '[{"province":${e}}]' or `
+        }
+      })
+    } else {
+      filterProvince = ``
+    }
+
+    console.log("Filter Province :: ")
+
+    const filterCarrierId = carrierId ? `"VwMyTruck"."carrier_id" in (${carrierId})` : ``
+    const filterTruckFinal = filterTruck ? `"VwMyTruck"."truck_type" in (${filterTruck})` : ``
+    const finalFilter: string = filterTruckFinal ? `${filterTruckFinal} ${filterCarrierId ? `and ${filterCarrierId}` : ``} ${filterProvince ? `and ${filterProvince}` : ``}`
+      : `${filterProvince} ${filterProvince && filterCarrierId ? ` and ${filterCarrierId}` : filterCarrierId}`
+    console.log("FinalFilter on  service :: ", finalFilter)
+
+    const findOptions: FindManyOptions = {
+      where: finalFilter,
+      order: {
+        [`${sortBy}`]: descending ? "ASC" : "DESC"
+      },
+    };
+
+    const repo = new TruckRepository()
+    const data = await repo.findMyTruck(server, findOptions)
+    const response_final = {
+      data: data[0],
+    }
+    console.log("Data in search FINAL :: ", response_final)
+    return response_final
+  }
 
 
   @Destructor()

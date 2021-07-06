@@ -182,4 +182,91 @@ export const getMySchema: FastifySchema = {
   }
 }
 
+export const getAllMeSchema: FastifySchema = {
+  headers: {
+    type: 'object',
+    properties: {
+      authorization: { type: 'string' }
+    },
+    require: ['authorization']
+  },
+  querystring: {
+    type: 'object',
+    properties: {
+      descending: { type: 'boolean', nullable: true },
+      sortBy: { type: 'string', nullable: true },
+      truckTypes: { type: 'string', nullable: true },
+      status: { type: 'number', nullable: true },
+      workingZones: { type: 'string', nullable: true },
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        data: { type: 'array' },
+      },
+    }
+  }
+}
+
+
+export const getAllMeWithoutAuthorizeSchema: FastifySchema = {
+  headers: {
+    type: 'object',
+    properties: {
+      authorization: { type: 'string' }
+    },
+    require: ['authorization']
+  },
+  params: { id: { type: 'string' } },
+  querystring: {
+    type: 'object',
+    properties: {
+      descending: { type: 'boolean', nullable: true },
+      sortBy: { type: 'string', nullable: true },
+      truckTypes: { type: 'string', nullable: true },
+      status: { type: 'number', nullable: true },
+      workingZones: { type: 'string', nullable: true },
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        data: { type: 'array' },
+      },
+    }
+  }
+}
+
+export const getMyTruckSummary: FastifySchema = {
+  headers: {
+    type: 'object',
+    properties: {
+      authorization: { type: 'string' }
+    },
+    require: ['authorization']
+  },
+  querystring: {
+    type: 'object',
+    properties: {
+      descending: { type: 'boolean', nullable: true },
+      sortBy: { type: 'string', nullable: true },
+      truckTypes: { type: 'string', nullable: true },
+      status: { type: 'number', nullable: true },
+      workingZones: { type: 'string', nullable: true },
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        trucks: { type: 'number' },
+        zones: { type: 'number' }
+      },
+    }
+  }
+}
+
 export default searchSchema

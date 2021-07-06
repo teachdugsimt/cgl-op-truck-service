@@ -82,6 +82,17 @@ const modelJoinTruck = {
   updatedAt: { type: "string", format: "date-time" },
   quotationNumber: { type: 'number', nullable: true },
   workingZones: { type: 'array' },
+  owner: {
+    type: 'object', properties: {
+      id: { type: 'number', nullable: true },
+      userId: { type: 'string', nullable: true },
+      companyName: { type: 'string', nullable: true },
+      fullName: { type: 'string', nullable: true },
+      mobileNo: { type: 'string', nullable: true },
+      email: { type: 'string', nullable: true },
+      avatar: { type: 'object', properties: { object: { type: 'string', nullable: true } } },
+    }
+  },
   truckPhotos: {
     type: 'object', properties: {
       front: { type: 'string' },
@@ -104,4 +115,63 @@ export const TruckOne: FastifySchema = {
     }
   }
 }
+
+
+
+export const FavoriteTruck: FastifySchema = {
+  headers: {
+    type: 'object',
+    properties: {
+      authorization: { type: 'string' }
+    },
+    require: ['authorization']
+  },
+  querystring: {
+    type: 'object',
+    properties: {
+      descending: { type: 'boolean', nullable: true },
+      page: { type: 'number', nullable: true },
+      rowsPerPage: { type: 'number', nullable: true },
+      sortBy: { type: 'string', nullable: true },
+      truckTypes: { type: 'string', nullable: true },
+      status: { type: 'number', nullable: true },
+      workingZones: { type: 'string', nullable: true },
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        data: { type: 'array' },
+        totalElements: { type: 'number' },
+        size: { type: 'number' },
+        numberOfElements: { type: 'number' },
+        currentPage: { type: 'number' },
+        totalPages: { type: 'number' },
+      },
+    }
+  }
+}
+
+export const PostFavoriteTruck: FastifySchema = {
+  headers: {
+    type: 'object',
+    properties: {
+      authorization: { type: 'string' }
+    },
+    require: ['authorization']
+  },
+  body: {
+    type: 'object',
+    properties: {
+      id: { type: 'string' }
+    }
+  },
+  response: {
+    200: {
+      type: 'boolean'
+    }
+  }
+}
+
 

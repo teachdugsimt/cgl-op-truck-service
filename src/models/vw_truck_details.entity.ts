@@ -35,12 +35,14 @@ json_agg(json_build_object(
   CASE
       WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
       ELSE COALESCE('[]'::json)
-  END AS work_zone
+  END AS work_zone,
+json_build_object('id', usr.id, 'fullName', usr.fullname, 'companyName', usr.fullname, 'email', usr.email, 'mobileNo', usr.phone_number, 'avatar', json_build_object('object', usr.avatar)) AS owner
 FROM truck truck
 LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
 LEFT JOIN truck_photo tp ON tp.truck_id = truck.id
+LEFT JOIN dblink('myserver'::text, 'SELECT id,email,fullname,phone_number,avatar FROM user_profile'::text) usr(id integer, email text, fullname text, phone_number text, avatar text) ON usr.id = truck.carrier_id
 LEFT JOIN dblink('cargolink'::text, 'SELECT id,order_id,truck_id FROM dtb_quotation_truck'::text) qu(id integer, order_id integer, truck_id integer) ON qu.truck_id = truck.id
-GROUP BY truck.id, tp.truck_id;
+GROUP BY truck.id, tp.truck_id, usr.id, usr.email, usr.fullname, usr.phone_number, usr.avatar;
   `
 })
 export class VwTruckDetails {
@@ -79,6 +81,25 @@ export class VwTruckDetails {
   workingZones: Array<{
     region: number | undefined, province?: number | undefined
   }>
+
+  @ViewColumn({ name: "owner" })
+  owner: {
+    "id": number
+    "userId": string
+    "companyName": string  | undefined
+    fullName: string | undefined
+    mobileNo: string | undefined
+    email: string | undefined
+    avatar: {
+      object: string | undefined
+    } | undefined
+  }
+
+  @AfterLoad()
+  getUserId() {
+    this.owner.userId = util.encodeUserId(+this.owner.id);
+    // this.owner.companyName = this.owner.fullName
+  }
 
 
   @ViewColumn({ name: "truck_photos" })

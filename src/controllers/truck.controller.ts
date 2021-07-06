@@ -1,23 +1,27 @@
-import { FastifyReply, FastifyRequest, FastifyInstance, FastifySchema } from 'fastify';
+import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify';
 import { Controller, GET, POST, PUT, getInstanceByToken, FastifyInstanceToken } from 'fastify-decorators';
 import PingService from '../services/ping.service';
 import SearchService from '../services/search.service';
 import SearchServiceGet from '../services/search-get.service';
 import TruckService from '../services/truck.service';
-import { TruckSchema, TruckOne, TruckFilterSchema } from './truck.schema';
-import searchSchema, { searchGetSchema, createTruck, updateTruck, getMySchema } from './search.schema';
-import { DtbTruck } from '../models'
-import { TruckFilter, RawUpdateTruck, Truck, TruckListResponse, TruckFilterGet } from './propsTypes'
+import FavoriteService from '../services/favorite.service'
+import { TruckOne, FavoriteTruck, PostFavoriteTruck } from './truck.schema';
+import {
+  searchGetSchema, createTruck, updateTruck, getMySchema, getAllMeSchema,
+  getMyTruckSummary, getAllMeWithoutAuthorizeSchema
+} from './search.schema';
+import { RawUpdateTruck, Truck, TruckListResponse, TruckFilterGet } from './propsTypes'
 import Utility from 'utility-layer/dist/security'
 const util = new Utility();
 @Controller({ route: '/api/v1/trucks' })
-export default class PingController {
+export default class TruckController {
 
   public static instance: FastifyInstance = getInstanceByToken(FastifyInstanceToken);
   private pingService = getInstanceByToken<PingService>(PingService);
   private searchService = getInstanceByToken<SearchService>(SearchService);
   private truckService = getInstanceByToken<TruckService>(TruckService);
   private searchServiceGet = getInstanceByToken<SearchServiceGet>(SearchServiceGet);
+  private favoriteTruckService = getInstanceByToken<FavoriteService>(FavoriteService);
 
   @GET({
     url: '/:id',
@@ -29,7 +33,7 @@ export default class PingController {
     try {
       const truck_id = util.decodeUserId(req.params.id)
       console.log("Request params :: ", truck_id)
-      const data = await this.truckService?.findTruckByID(PingController.instance, truck_id)
+      const data = await this.truckService?.findTruckByID(TruckController.instance, truck_id)
       console.log("Final data find one :: ", data)
       return { data }
     } catch (err) {
@@ -37,23 +41,6 @@ export default class PingController {
       return err
     }
   }
-
-  // @POST({  // search by POST
-  //   url: '/',
-  //   options: {
-  //     schema: searchSchema
-  //   },
-  // })
-  // async searchTruckHandler(req: FastifyRequest<{ Body: TruckFilter }>, reply: FastifyReply): Promise<TruckListResponse> {
-  //   try {
-  //     const response = await this.searchService?.search(PingController.instance, req.body)
-  //     return { ...response }
-
-  //   } catch (err) {
-  //     console.log("Raw Erorr Controller : ", err)
-  //     return err
-  //   }
-  // }
 
   @POST({ // crerate new truck
     url: '/',
@@ -67,7 +54,7 @@ export default class PingController {
       // if (validateCarrierId.carrierId && validateCarrierId.carrierId.match(/^[0-9A-Z]{8,15}$/)) {
       //   validateCarrierId.carrierId = util.decodeUserId(validateCarrierId.carrierId)
       // }
-      const result = await this.truckService?.createTruck(PingController.instance, req.body)
+      const result = await this.truckService?.createTruck(TruckController.instance, req.body)
       console.log("Result create new truck  :: ", result)
       return { data: result }
 
@@ -93,7 +80,7 @@ export default class PingController {
       data.id = id
       data.carrierId = carrierId
 
-      const result = await this.truckService?.updateTruck(PingController.instance, data)
+      const result = await this.truckService?.updateTruck(TruckController.instance, data)
       return result ? true : false
 
     } catch (err) {
@@ -110,7 +97,7 @@ export default class PingController {
   })
   async searchGetTruckHandler(req: FastifyRequest<{ Querystring: TruckFilterGet }>, reply: FastifyReply): Promise<TruckListResponse> {
     try {
-      const response = await this.searchServiceGet?.search(PingController.instance, req.query)
+      const response = await this.searchServiceGet?.search(TruckController.instance, req.query)
       return { ...response }
 
     } catch (err) {
@@ -135,8 +122,106 @@ export default class PingController {
       console.log("Real User id : ", userId)
       // const userId = 7
 
-      const response = await this.searchServiceGet?.searchMe(PingController.instance, req.query, userId)
+      const response = await this.searchServiceGet?.searchMe(TruckController.instance, req.query, userId)
       return { ...response }
+    } catch (err) {
+      console.log("Raw Erorr Controller : ", err)
+      return err
+    }
+  }
+
+  @GET({
+    url: '/me/all',
+    options: {
+      schema: getAllMeSchema
+    },
+  })
+  async getListAllMyTruck(req: FastifyRequest<{ Querystring: TruckFilterGet, Headers: { authorization: string }, }>, reply: FastifyReply): Promise<any> {
+    try {
+      const token = req.headers.authorization
+      const rawObject = util.getUserIdByToken(token)
+      const userId = util.decodeUserId(rawObject)
+      const response = await this.searchServiceGet?.searchMyAll(TruckController.instance, req.query, userId)
+      return { ...response }
+    } catch (err) {
+      console.log("Raw Erorr Controller : ", err)
+      return err
+    }
+  }
+
+  @GET({
+    url: '/me/list-all/:id',
+    options: {
+      schema: getAllMeWithoutAuthorizeSchema
+    },
+  })
+  async getListAllMyTruckWithoutAuthorize(req: FastifyRequest<{ Querystring: TruckFilterGet, Params: { id: string }, Headers: { authorization: string } }>, reply: FastifyReply): Promise<any> {
+    try {
+      const enId = req.params.id
+      const userId = util.decodeUserId(enId)
+      const response = await this.searchServiceGet?.searchMyAll(TruckController.instance, req.query, userId)
+      return { ...response }
+    } catch (err) {
+      console.log("Raw Erorr Controller : ", err)
+      return err
+    }
+  }
+
+  @GET({
+    url: '/my-truck',
+    options: {
+      schema: getMyTruckSummary
+    },
+  })
+  async getTruckSummary(req: FastifyRequest<{ Querystring: TruckFilterGet, Headers: { authorization: string }, }>, reply: FastifyReply): Promise<any> {
+    try {
+      const repo = new TruckController()
+      const response = await repo.getListAllMyTruck(req, reply)
+      const processSummary = this.truckService.processTruckSummary(response.data)
+      console.log("Finalresponse summary :: ", processSummary)
+      return { ...processSummary }
+    } catch (err) {
+      console.log("Raw Erorr Controller : ", err)
+      return err
+    }
+  }
+
+
+
+
+
+  @GET({
+    url: '/favorite',
+    options: {
+      schema: FavoriteTruck
+    },
+  })
+  async getFavoriteTruck(req: FastifyRequest<{ Querystring: TruckFilterGet, Headers: { authorization: string } }>, reply: FastifyReply): Promise<any> {
+    try {
+      const token = req.headers.authorization
+      const rawObject = util.getUserIdByToken(token)
+      const userId = util.decodeUserId(rawObject)
+      const response = await this.favoriteTruckService?.getFavorite(TruckController.instance, req.query, userId)
+      return { ...response }
+    } catch (err) {
+      console.log("Raw Erorr Controller : ", err)
+      return err
+    }
+  }
+
+  @POST({
+    url: '/favorite',
+    options: {
+      schema: PostFavoriteTruck
+    },
+  })
+  async postFavoriteTruck(req: FastifyRequest<{ Body: { id: string }, Headers: { authorization: string } }>, reply: FastifyReply): Promise<any> {
+    try {
+      const token = req.headers.authorization
+      const rawObject = util.getUserIdByToken(token)
+      const userId = util.decodeUserId(rawObject)
+      const response = await this.favoriteTruckService?.addFavoriteTruck(TruckController.instance, userId, util.decodeUserId(req.body.id))
+      return response
     } catch (err) {
       console.log("Raw Erorr Controller : ", err)
       return err
