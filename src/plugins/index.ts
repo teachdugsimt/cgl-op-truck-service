@@ -4,7 +4,7 @@ import { createConnection } from 'typeorm';
 // import config from '../config/ormconfig'
 import {
   DtbTruck, TruckPhoto, DtbTruckWorkingZone, VwTruckList, VwTruckDetails, VwMyTruck,
-  VwTruckFavorite, FavoriteTruck
+  VwTruckFavorite, FavoriteTruck, VwMyTruckId
 } from '../models';
 
 export default fp(async server => {
@@ -22,6 +22,7 @@ export default fp(async server => {
       vwTruckDetails: connection.getRepository(VwTruckDetails),
       vwMyTruck: connection.getRepository(VwMyTruck),
       vwTruckFavorite: connection.getRepository(VwTruckFavorite),
+      vwMyTruckId: connection.getRepository(VwMyTruckId),
       favoriteTruck: connection.getRepository(FavoriteTruck),
     });
     console.timeEnd()

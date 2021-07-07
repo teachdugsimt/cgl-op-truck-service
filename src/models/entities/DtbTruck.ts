@@ -115,7 +115,7 @@ export class DtbTruck {
   truckType: number;
 
   @Column("integer", { name: "approve_status", default: () => "0" })
-  approveStatus: number;
+  approveStatus: number | string;
 
   @Column("timestamp without time zone", {
     name: "approve_date",

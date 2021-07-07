@@ -102,7 +102,7 @@ const modelJoinTruck = {
     }
   }
 }
-export const TruckOne: FastifySchema = {
+export const TruckOne: FastifySchema = {  // without quotations data
   params: {
     id: { type: 'string' },
   },
@@ -111,6 +111,26 @@ export const TruckOne: FastifySchema = {
       type: 'object',
       properties: {
         data: { type: "object", properties: modelJoinTruck },
+      },
+    }
+  }
+}
+
+
+export const TruckOneOnlyMe: FastifySchema = {  // attach quotatitons data
+  params: {
+    id: { type: 'string' },
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        data: {
+          type: "object", properties: {
+            ...modelJoinTruck,
+            quotations: { type: 'array' }
+          }
+        },
       },
     }
   }

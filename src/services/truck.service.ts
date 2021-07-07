@@ -9,9 +9,14 @@ export default class TruckService {
   async init(): Promise<void> {
   }
 
+  async findMyTruckWithId(server: FastifyInstance, id: string): Promise<any> {
+    const repo = new TruckRepository()
+    const data = await repo.findMyTruckWithId(server, id)
+    return data
+  }
+
   async findTruckByID(server: FastifyInstance, id: string): Promise<any> {
     // console.log("Server :: ", server)
-
     const repo = new TruckRepository()
     const data = await repo.findOneById(server, id)
     return data

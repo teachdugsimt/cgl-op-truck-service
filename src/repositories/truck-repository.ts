@@ -5,6 +5,7 @@ import _ from "lodash";
 import { FastifyInstance } from 'fastify';
 import axios from 'axios'
 import Utility from 'utility-layer/dist/security'
+import { parse } from 'dotenv';
 const util = new Utility();
 
 console.log("PARSEC  ID :: ", util.encodeUserId(523))
@@ -37,10 +38,6 @@ export default class TruckRepository {
   async findOneById(server: any, id: string | number) {
     try {
       let repository: any = await server?.db?.vwTruckDetails
-      // const filterTest: FindOneOptions = {
-      //   where: [{ id }],
-      //   select: ['s', 'sa']
-      // }
       let truck_list: any = await repository.findOne({ id });
       console.log("Raw data query : ", truck_list)
 
@@ -365,7 +362,53 @@ export default class TruckRepository {
 
 
 
+  async findMyTruckWithId(server: any, id: string | number) {
+    try {
+      let repository: any = await server?.db?.vwMyTruckId
+      let truck_list: any = await repository.findOne({ id });
+      console.log("query find my truck with id : ", truck_list)
 
+      const parseData: any = JSON.parse(JSON.stringify(truck_list));
+      let modelTruck: any = {
+        front: null,
+        back: null,
+        left: null,
+        right: null,
+      }
+      parseData['truckPhotos'] = modelTruck
+
+      if (truck_list.truckPhotos && truck_list.truckPhotos.length) {
+        truck_list.truckPhotos.map((e: any) => {
+          if (e.left) modelTruck.left = e.left
+          if (e.right) modelTruck.right = e.right
+          if (e.front) modelTruck.front = e.front
+          if (e.back) modelTruck.back = e.back
+        })
+      }
+      parseData.truckPhotos = modelTruck
+
+      const tmpParseData = JSON.parse(JSON.stringify(parseData))
+      // console.log("TmpParse data :: ", tmpParseData)
+      if (tmpParseData.quotations && Array.isArray(tmpParseData.quotations) && tmpParseData.quotations.length > 0) {
+        tmpParseData.quotations.map((q: any) => {
+          let tmpId = q.id
+          q.id = util.encodeUserId(tmpId)
+          q.bookingDatetime = q.bookingdatetime
+          delete q.bookingdatetime
+          q.fullName = q.fullname
+          delete q.fullname
+          return q
+        })
+      }
+
+
+      console.log("Repo find my truck by id :: ", tmpParseData)
+      return tmpParseData
+    } catch (error) {
+      console.log("Error repository find  with id :: ", error)
+      throw error
+    }
+  }
 
   async addFavoriteTruck(server: any, userId: number, truckId: number) {
     try {

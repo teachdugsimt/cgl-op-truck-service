@@ -7,30 +7,23 @@ const util = new Security();
 @ViewEntity({
   expression: `
   SELECT truck.id,
-  CASE
-      WHEN truck.approve_status = 0 THEN 'Pending'::text
-      ELSE 'Approved'::text
-  END AS approve_status,
-truck.loading_weight,
-string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
-truck.stall_height,
-  CASE
-      WHEN count(qu.*) > 0 THEN count(qu.*)
-      ELSE 0::bigint
-  END AS quotation_number,
-truck.is_tipper AS tipper,
-truck.truck_type,
-truck.created_at,
-truck.updated_at,
-truck.carrier_id,
-  CASE
-      WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
-      ELSE COALESCE('[]'::json)
-  END AS work_zone
-FROM truck truck
-LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
-LEFT JOIN dblink('cargolink'::text, 'SELECT id,order_id,truck_id FROM dtb_quotation_truck'::text) qu(id integer, order_id integer, truck_id integer) ON qu.truck_id = truck.id
-GROUP BY truck.id;
+    truck.approve_status,
+    truck.loading_weight,
+    string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+    truck.stall_height,
+(Select COUNT(*) FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id FROM booking'::text) book2(id integer,truck_id integer, requester_type TEXT, accepter_user_id integer) WHERE book2.truck_id = truck.id and book2.requester_type = 'JOB_OWNER') as quotation_number,
+    truck.is_tipper AS tipper,
+    truck.truck_type,
+    truck.created_at,
+    truck.updated_at,
+    truck.carrier_id,
+        CASE
+            WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
+            ELSE COALESCE('[]'::json)
+        END AS work_zone
+   FROM truck truck
+     LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
+       GROUP BY truck.id;
   `
 })
 export class VwMyTruck {

@@ -69,8 +69,8 @@ export class DtbTruck {
   @Column("integer", { name: "truck_type", default: () => "0" })
   truckType: number;
 
-  @Column("integer", { name: "approve_status", default: () => "0" })
-  approveStatus: number;
+  @Column("integer", { name: "approve_status", default: () => "'INACTIVE'::status_enum" })
+  approveStatus: number | string;
 
   @Column("timestamp without time zone", {
     name: "approve_date",

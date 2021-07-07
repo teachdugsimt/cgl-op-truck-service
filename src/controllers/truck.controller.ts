@@ -5,7 +5,7 @@ import SearchService from '../services/search.service';
 import SearchServiceGet from '../services/search-get.service';
 import TruckService from '../services/truck.service';
 import FavoriteService from '../services/favorite.service'
-import { TruckOne, FavoriteTruck, PostFavoriteTruck } from './truck.schema';
+import { TruckOne, TruckOneOnlyMe, FavoriteTruck, PostFavoriteTruck } from './truck.schema';
 import {
   searchGetSchema, createTruck, updateTruck, getMySchema, getAllMeSchema,
   getMyTruckSummary, getAllMeWithoutAuthorizeSchema
@@ -24,12 +24,12 @@ export default class TruckController {
   private favoriteTruckService = getInstanceByToken<FavoriteService>(FavoriteService);
 
   @GET({
-    url: '/:id',
+    url: '/view/:id',
     options: {
       schema: TruckOne
     },
   })
-  async findMyTruckWithId(req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply): Promise<any> {
+  async findTruckDetailWithId(req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply): Promise<any> {
     try {
       const truck_id = util.decodeUserId(req.params.id)
       console.log("Request params :: ", truck_id)
@@ -41,6 +41,28 @@ export default class TruckController {
       return err
     }
   }
+
+
+  @GET({
+    url: '/:id',
+    options: {
+      schema: TruckOneOnlyMe
+    },
+  })
+  async findMyTruckDetail(req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply): Promise<any> {
+    try {
+      const truck_id = util.decodeUserId(req.params.id)
+      console.log("Request params :: ", truck_id)
+      const data = await this.truckService?.findMyTruckWithId(TruckController.instance, truck_id)
+      console.log("Final data find one (my truck) :: ", data)
+      return { data }
+    } catch (err) {
+      console.log("Raw Erorr Controller : ", err)
+      return err
+    }
+  }
+
+
 
   @POST({ // crerate new truck
     url: '/',

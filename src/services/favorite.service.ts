@@ -5,7 +5,7 @@ import { TruckFilterGet } from '../controllers/propsTypes'
 import { FindManyOptions } from 'typeorm';
 
 const enum_status = {
-  0: 'Pending', 1: 'Approved'
+  0: 'INACTIVE', 1: 'ACTIVE'
 }
 @Service()
 export default class FavoriteService {

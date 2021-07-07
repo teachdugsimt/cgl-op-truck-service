@@ -8,10 +8,7 @@ const util = new Security();
   expression: `
   SELECT truck.id,
   fav.user_id,
-      CASE
-          WHEN truck.approve_status = 0 THEN 'Pending'::text
-          ELSE 'Approved'::text
-      END AS approve_status,
+  truck.approve_status,
   truck.loading_weight,
   string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
   truck.stall_height,
