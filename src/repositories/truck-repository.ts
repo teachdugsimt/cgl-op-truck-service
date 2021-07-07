@@ -1,11 +1,9 @@
 import { DtbTruck, DtbTruckWorkingZone, TruckPhoto, FavoriteTruck } from '../models'
-import { DataTypeNotSupportedError, FindOneOptions, In, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 import { Truck, ParseUpdateTruck, TruckPhotoUpdate } from '../controllers/propsTypes'
 import _ from "lodash";
-import { FastifyInstance } from 'fastify';
 import axios from 'axios'
 import Utility from 'utility-layer/dist/security'
-import { parse } from 'dotenv';
 const util = new Utility();
 
 console.log("PARSEC  ID :: ", util.encodeUserId(523))
@@ -96,7 +94,7 @@ export default class TruckRepository {
       let repositoryTPhoto: Repository<TruckPhoto> = await server?.db.truckPhoto
 
 
-      const saveTruck: any = await repository.save({
+      const saveTruck: any = await repository.save(repository.create({
         carrierId: data?.carrierId,
         registrationNumber: data.registrationNumber && data.registrationNumber.length ? data.registrationNumber.join(' ') : null,
         loadingWeight: data.loadingWeight || 0,
@@ -104,7 +102,7 @@ export default class TruckRepository {
         isTipper: data.tipper || false,
         truckType: data.truckType,
         createdUser: "" + data?.carrierId
-      })
+      }))
       console.log("Save Truck  data :: ", saveTruck)
 
 
@@ -204,7 +202,7 @@ export default class TruckRepository {
 
 
 
-      const saveTruck: any = await repository.save({
+      const saveTruck: any = await repository.save(repository.create({
         id: data.id,
         carrierId: data?.carrierId,
         registrationNumber: data.registrationNumber && data.registrationNumber.length ? data.registrationNumber.join(' ') : null,
@@ -213,7 +211,7 @@ export default class TruckRepository {
         isTipper: data.tipper || false,
         truckType: data.truckType,
         updatedUser: "" + data?.carrierId,
-      })
+      }))
       console.log("SaveTruck : ", saveTruck)
 
 

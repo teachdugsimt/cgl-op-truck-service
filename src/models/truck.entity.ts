@@ -1,5 +1,7 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
-import { TruckPhoto } from './truck-photo.entity'
+import {
+  Column, Entity, Index, PrimaryGeneratedColumn, BeforeInsert,
+  BeforeUpdate
+} from "typeorm";
 @Index("truck_pkey", ["id"], { unique: true })
 @Entity("truck", { schema: "public" })
 export class DtbTruck {
@@ -97,4 +99,14 @@ export class DtbTruck {
   })
   stallHeight: string | null;
 
+  @BeforeInsert()
+  @BeforeUpdate()
+  addUpdateTime() {
+    this.updatedAt = new Date()
+  }
+
+  @BeforeInsert()
+  addInsertTime() {
+    this.createdAt = new Date()
+  }
 }
