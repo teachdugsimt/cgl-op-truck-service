@@ -119,6 +119,13 @@ export const searchGetSchema: FastifySchema = {
   }
 }
 export const createTruck: FastifySchema = {
+  headers: {
+    type: 'object',
+    properties: {
+      authorization: { type: 'string' }
+    },
+    require: ['authorization']
+  },
   body: inputCreateTruck,
   response: {
     200: {

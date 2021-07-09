@@ -6,12 +6,11 @@ import axios from 'axios'
 import Utility from 'utility-layer/dist/security'
 const util = new Utility();
 
-console.log("PARSEC  ID :: ", util.encodeUserId(523))
-console.log("Carrier ID parse  :: ", util.encodeUserId(7))
 const enum_type_image = {
   front: 1, back: 2, left: 3, right: 4,
   FRONT: 1, BACK: 2, LEFT: 3, RIGHT: 4,
 }
+const enum_position = ['front', 'back', 'left', 'right']
 
 interface ListNewUpload {
   truckId: number
@@ -40,24 +39,23 @@ export default class TruckRepository {
       console.log("Raw data query : ", truck_list)
 
       const parseData: any = JSON.parse(JSON.stringify(truck_list));
-      let modelTruck: any = {
+      let modelTruckPhotos: any = {
         front: null,
         back: null,
         left: null,
         right: null,
       }
-      parseData['truckPhotos'] = modelTruck
-
-      if (truck_list.truckPhotos && truck_list.truckPhotos.length) {
-        truck_list.truckPhotos.map((e: any) => {
-          if (e.left) modelTruck.left = e.left
-          if (e.right) modelTruck.right = e.right
-          if (e.front) modelTruck.front = e.front
-          if (e.back) modelTruck.back = e.back
+      if (parseData.truckPhotos && Object.keys(parseData.truckPhotos).length > 0) {
+        enum_position.map(e => {
+          if (!parseData.truckPhotos[e]) {
+            parseData.truckPhotos[e] = null
+          }
         })
-      }
-      parseData.truckPhotos = modelTruck
 
+        Object.keys(parseData.truckPhotos).map(e => e == 'none' && delete parseData.truckPhotos[e])
+      } else {
+        parseData['truckPhotos'] = modelTruckPhotos
+      }
       console.log("Parse truck  Photos :: ", parseData)
       return parseData
     } catch (error) {
@@ -367,23 +365,23 @@ export default class TruckRepository {
       console.log("query find my truck with id : ", truck_list)
 
       const parseData: any = JSON.parse(JSON.stringify(truck_list));
-      let modelTruck: any = {
+      let modelTruckPhotos: any = {
         front: null,
         back: null,
         left: null,
         right: null,
       }
-      parseData['truckPhotos'] = modelTruck
-
-      if (truck_list.truckPhotos && truck_list.truckPhotos.length) {
-        truck_list.truckPhotos.map((e: any) => {
-          if (e.left) modelTruck.left = e.left
-          if (e.right) modelTruck.right = e.right
-          if (e.front) modelTruck.front = e.front
-          if (e.back) modelTruck.back = e.back
+      if (parseData.truckPhotos && Object.keys(parseData.truckPhotos).length > 0) {
+        enum_position.map(e => {
+          if (!parseData.truckPhotos[e]) {
+            parseData.truckPhotos[e] = null
+          }
         })
+
+        Object.keys(parseData.truckPhotos).map(e => e == 'none' && delete parseData.truckPhotos[e])
+      } else {
+        parseData['truckPhotos'] = modelTruckPhotos
       }
-      parseData.truckPhotos = modelTruck
 
       const tmpParseData = JSON.parse(JSON.stringify(parseData))
       // console.log("TmpParse data :: ", tmpParseData)

@@ -8,39 +8,39 @@ const util = new Security();
 @ViewEntity({
   expression: `
   SELECT truck.id,
-truck.approve_status,
-truck.loading_weight,
-string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
-truck.stall_height,
-( SELECT count(*) AS count
-     FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id FROM booking'::text) book2(id integer, truck_id integer, requester_type text, accepter_user_id integer)
-    WHERE book2.truck_id = truck.id AND book2.requester_type = 'JOB_OWNER'::text) AS quotation_number,
-  CASE
-      WHEN truck.id = bookv.truck_id THEN json_agg(json_build_object('id', bookv.id, 'avatar', bookv.avatar, 'fullname', bookv.fullname, 'bookingdatetime', bookv.bookingdatetime))
-      ELSE COALESCE('[]'::json)
-  END AS quotations,
-truck.is_tipper AS tipper,
-truck.truck_type,
-truck.created_at,
-truck.updated_at,
-json_agg(json_build_object(
-  CASE
-      WHEN tp.type = 1 THEN 'front'::text
-      WHEN tp.type = 2 THEN 'back'::text
-      WHEN tp.type = 3 THEN 'left'::text
-      WHEN tp.type = 4 THEN 'right'::text
-      WHEN tp.type IS NULL THEN 'left'::text
-      ELSE ''::text
-  END, tp.photo_name)) AS truck_photos,
-truck.carrier_id,
-  CASE
-      WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
-      ELSE COALESCE('[]'::json)
-  END AS work_zone
-FROM truck truck
-LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
-LEFT JOIN truck_photo tp ON tp.truck_id = truck.id
-LEFT JOIN dblink('bookingservice'::text, 'SELECT id,truck_id,avatar,fullname,bookingdatetime FROM vw_job_booking_truck_list'::text) bookv(id integer, truck_id integer, avatar json, fullname text, bookingdatetime text) ON bookv.truck_id = truck.id
+  truck.approve_status,
+  truck.loading_weight,
+  string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+  truck.stall_height,
+  ( SELECT count(*) AS count
+         FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id FROM booking'::text) book2(id integer, truck_id integer, requester_type text, accepter_user_id integer)
+        WHERE book2.truck_id = truck.id AND book2.requester_type = 'JOB_OWNER'::text) AS quotation_number,
+      CASE
+          WHEN truck.id = bookv.truck_id THEN json_agg(json_build_object('id', bookv.id, 'avatar', bookv.avatar, 'fullname', bookv.fullname, 'bookingdatetime', bookv.bookingdatetime))
+          ELSE COALESCE('[]'::json)
+      END AS quotations,
+  truck.is_tipper AS tipper,
+  truck.truck_type,
+  truck.created_at,
+  truck.updated_at,
+  ( SELECT json_object_agg(
+              CASE
+                  WHEN tp.type = 1 THEN 'front'::text
+                  WHEN tp.type = 2 THEN 'back'::text
+                  WHEN tp.type = 3 THEN 'left'::text
+                  WHEN tp.type = 4 THEN 'right'::text
+                  ELSE 'none'::text
+              END, tp.photo_name) AS truck_photos
+         FROM truck_photo tp
+        WHERE tp.truck_id = truck.id) AS truck_photos,
+  truck.carrier_id,
+      CASE
+          WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
+          ELSE COALESCE('[]'::json)
+      END AS work_zone
+ FROM truck truck
+   LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
+   LEFT JOIN dblink('bookingservice'::text, 'SELECT id,truck_id,avatar,fullname,bookingdatetime FROM vw_job_booking_truck_list'::text) bookv(id integer, truck_id integer, avatar json, fullname text, bookingdatetime text) ON bookv.truck_id = truck.id
 GROUP BY truck.id, bookv.truck_id;
   `
 })
@@ -88,7 +88,12 @@ export class VwMyTruckId {
   }> | [] | null
 
   @ViewColumn({ name: "truck_photos" })
-  truckPhotos: Array<object>
+  truckPhotos: {
+    front: string | null
+    back: string | null
+    left: string | null
+    right: string | null
+  } | null
 
   @ViewColumn({ name: "work_zone" })
   workingZones: Array<{

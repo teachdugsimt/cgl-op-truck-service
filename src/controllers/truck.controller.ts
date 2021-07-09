@@ -5,7 +5,7 @@ import SearchService from '../services/search.service';
 import SearchServiceGet from '../services/search-get.service';
 import TruckService from '../services/truck.service';
 import FavoriteService from '../services/favorite.service'
-import { TruckOne, TruckOneOnlyMe, FavoriteTruck, PostFavoriteTruck } from './truck.schema';
+import { TruckOne, TruckOneOnlyMe, TruckOneMST, FavoriteTruck, PostFavoriteTruck } from './truck.schema';
 import {
   searchGetSchema, createTruck, updateTruck, getMySchema, getAllMeSchema,
   getMyTruckSummary, getAllMeWithoutAuthorizeSchema
@@ -22,6 +22,33 @@ export default class TruckController {
   private truckService = getInstanceByToken<TruckService>(TruckService);
   private searchServiceGet = getInstanceByToken<SearchServiceGet>(SearchServiceGet);
   private favoriteTruckService = getInstanceByToken<FavoriteService>(FavoriteService);
+
+
+
+
+  @GET({
+    url: '/:id/mst',
+    options: {
+      schema: TruckOneMST
+    },
+  })
+  async findTruckMst(req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply): Promise<any> {
+    try {
+      const truck_id = util.decodeUserId(req.params.id)
+      const server: any = TruckController.instance
+      const repository: any = server?.db?.truck
+      const data = await repository.findOne({
+        where: [{ id: truck_id }], select: ['id', 'carrierId', 'approveStatus',
+          'loadingWeight', 'registrationNumber', 'stallHeight', 'isTipper', 'truckType',
+          'createdAt', 'updatedAt']
+      })
+      console.log("Final data find one :: ", data)
+      return { ...data }
+    } catch (err) {
+      console.log("Raw Erorr Controller : ", err)
+      return err
+    }
+  }
 
   @GET({
     url: '/view/:id',
@@ -70,12 +97,8 @@ export default class TruckController {
       schema: createTruck
     },
   })
-  async searchTruckHandler(req: FastifyRequest<{ Body: Truck }>, reply: FastifyReply): Promise<any> {
+  async searchTruckHandler(req: FastifyRequest<{ Body: Truck, Headers: { authorization: string } }>, reply: FastifyReply): Promise<any> {
     try {
-      // const validateCarrierId: any = req.body
-      // if (validateCarrierId.carrierId && validateCarrierId.carrierId.match(/^[0-9A-Z]{8,15}$/)) {
-      //   validateCarrierId.carrierId = util.decodeUserId(validateCarrierId.carrierId)
-      // }
       const result = await this.truckService?.createTruck(TruckController.instance, req.body)
       console.log("Result create new truck  :: ", result)
       return { data: result }

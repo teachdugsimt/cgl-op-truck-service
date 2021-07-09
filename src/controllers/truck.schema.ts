@@ -116,6 +116,31 @@ export const TruckOne: FastifySchema = {  // without quotations data
   }
 }
 
+const modelTruckMST = {
+  id: { type: 'string' },
+  carrierId: { type: 'number' },
+  approveStatus: { type: 'string' },
+  loadingWeight: { type: 'number' },
+  registrationNumber: { type: 'string', nullable: true },
+  stallHeight: { type: 'string' },
+  tipper: { type: 'boolean' },
+  truckType: { type: "number" },
+  createdAt: { type: "string", format: "date-time" },
+  updatedAt: { type: "string", format: "date-time" },
+}
+export const TruckOneMST: FastifySchema = {  // without quotations data
+  params: {
+    id: { type: 'string' },
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: modelTruckMST
+    }
+  }
+}
+
+
 
 export const TruckOneOnlyMe: FastifySchema = {  // attach quotatitons data
   params: {
