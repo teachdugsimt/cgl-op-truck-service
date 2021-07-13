@@ -107,5 +107,6 @@ export class VwTruckDetails {
   @AfterLoad()
   parseTruckId() {
     this.id = util.encodeUserId(+this.id)
+    this.owner.companyName = this.owner.fullName || ''
   }
 }

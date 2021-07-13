@@ -11,7 +11,9 @@ const util = new Security();
     truck.loading_weight,
     string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
     truck.stall_height,
-(Select COUNT(*) FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id FROM booking'::text) book2(id integer,truck_id integer, requester_type TEXT, accepter_user_id integer) WHERE book2.truck_id = truck.id and book2.requester_type = 'JOB_OWNER') as quotation_number,
+    ( SELECT count(*) AS count
+           FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id,status FROM booking'::text) book2(id integer, truck_id integer, requester_type text, accepter_user_id integer, "status" text)
+          WHERE book2.truck_id = truck.id AND book2.requester_type = 'JOB_OWNER'::text and book2.status = 'WAITING') AS quotation_number,
     truck.is_tipper AS tipper,
     truck.truck_type,
     truck.created_at,
@@ -23,7 +25,8 @@ const util = new Security();
         END AS work_zone
    FROM truck truck
      LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
-       GROUP BY truck.id;
+  GROUP BY truck.id;
+
   `
 })
 export class VwMyTruck {

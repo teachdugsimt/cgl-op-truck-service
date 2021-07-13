@@ -81,6 +81,7 @@ export class VwTruckFavorite {
   @AfterLoad()
   getUserId() {
     this.owner.userId = util.encodeUserId(+this.owner.id);
+    this.owner.companyName = this.owner.fullName || ''
   }
 
   @AfterLoad()

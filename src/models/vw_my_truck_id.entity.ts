@@ -13,8 +13,8 @@ const util = new Security();
   string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
   truck.stall_height,
   ( SELECT count(*) AS count
-         FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id FROM booking'::text) book2(id integer, truck_id integer, requester_type text, accepter_user_id integer)
-        WHERE book2.truck_id = truck.id AND book2.requester_type = 'JOB_OWNER'::text) AS quotation_number,
+         FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id,status FROM booking'::text) book2(id integer, truck_id integer, requester_type text, accepter_user_id integer, status text)
+        WHERE book2.truck_id = truck.id AND book2.requester_type = 'JOB_OWNER'::text AND book2.status = 'WAITING'::text) AS quotation_number,
       CASE
           WHEN truck.id = bookv.truck_id THEN json_agg(json_build_object('id', bookv.id, 'avatar', bookv.avatar, 'fullname', bookv.fullname, 'bookingdatetime', bookv.bookingdatetime))
           ELSE COALESCE('[]'::json)
@@ -40,8 +40,8 @@ const util = new Security();
       END AS work_zone
  FROM truck truck
    LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
-   LEFT JOIN dblink('bookingservice'::text, 'SELECT id,truck_id,avatar,fullname,bookingdatetime FROM vw_job_booking_truck_list'::text) bookv(id integer, truck_id integer, avatar json, fullname text, bookingdatetime text) ON bookv.truck_id = truck.id
-GROUP BY truck.id, bookv.truck_id;
+   LEFT JOIN dblink('bookingservice'::text, 'SELECT id,truck_id,avatar,fullname,bookingdatetime,status FROM vw_job_booking_truck_list'::text) bookv(id integer, truck_id integer, avatar json, fullname text, bookingdatetime text, status text) ON bookv.truck_id = truck.id AND bookv.status = 'WAITING'::text
+GROUP BY truck.id, bookv.truck_id, bookv.status;
   `
 })
 export class VwMyTruckId {

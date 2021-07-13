@@ -70,7 +70,7 @@ export class VwTruckList {
   owner: {
     "id": number
     "userId": string
-    // "companyName": "Maya Moya"
+    "companyName": string | null
     fullName: string | undefined
     mobileNo: string | undefined
     email: string | undefined
@@ -82,6 +82,7 @@ export class VwTruckList {
   @AfterLoad()
   getUserId() {
     this.owner.userId = util.encodeUserId(+this.owner.id);
+    this.owner.companyName = this.owner.fullName || ''
   }
 
   @AfterLoad()
