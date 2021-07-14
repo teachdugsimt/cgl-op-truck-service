@@ -8,6 +8,7 @@ const inputCreateTruck = {
     stallHeight: { type: 'string', nullable: true },
     tipper: { type: 'boolean', nullable: true },
     registrationNumber: { type: 'array' },
+    createdFrom: { type: 'number', nullable: true },
     truckPhotos: {
       type: 'object', properties: {
         front: { type: 'string', nullable: true },

@@ -99,6 +99,10 @@ export class DtbTruck {
   })
   stallHeight: string | null;
 
+
+  @Column("integer", { name: "created_from", default: 1 })
+  createdFrom: number | null;
+
   @BeforeInsert()
   @BeforeUpdate()
   addUpdateTime() {

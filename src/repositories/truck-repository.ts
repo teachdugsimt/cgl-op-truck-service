@@ -99,7 +99,8 @@ export default class TruckRepository {
         stallHeight: data.stallHeight || "LOW",
         isTipper: data.tipper || false,
         truckType: data.truckType,
-        createdUser: "" + data?.carrierId
+        createdUser: "" + data?.carrierId,
+        createdFrom: data.createdFrom ? data.createdFrom : 1
       }))
       console.log("Save Truck  data :: ", saveTruck)
 

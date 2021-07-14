@@ -6,7 +6,7 @@ const TruckNewModel = sql.define({
   columns: ["id", "name", "carrier_id", "registration_number", "loading_weight",
     "truck_type", "approve_status", "approve_date", "group_truck_type",
     "is_tipper", "stall_height", "is_deleted",
-    "created_at", "updated_at", "created_user", "updated_user"],
+    "created_at", "updated_at", "created_user", "updated_user", "created_from"],
 });
 
 const runTruck = async () => {
@@ -50,7 +50,8 @@ const runTruck = async () => {
     "created_at": tr["created_at"],
     "updated_at": tr["updated_at"],
     "created_user": tr["created_user"],
-    "updated_user": tr["updated_user"]
+    "updated_user": tr["updated_user"],
+    "created_from": tr["created_from"]
   }));
 
   const rowQueryUserRole = TruckNewModel.insert(newTruck).toQuery();

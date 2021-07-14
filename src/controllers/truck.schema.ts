@@ -82,6 +82,7 @@ const modelJoinTruck = {
   updatedAt: { type: "string", format: "date-time" },
   quotationNumber: { type: 'number', nullable: true },
   workingZones: { type: 'array' },
+  createdFrom: { type: 'number', nullable: true },
   owner: {
     type: 'object', properties: {
       id: { type: 'number', nullable: true },

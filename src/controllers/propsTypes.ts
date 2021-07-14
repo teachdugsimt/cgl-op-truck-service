@@ -49,6 +49,7 @@ export interface Truck {
     region: number,
     province?: number | null
   }> | null
+  createdFrom?: number | null
 }
 
 
@@ -86,13 +87,13 @@ export interface UpdateTruck {
 }
 
 export interface RawUpdateTruck extends UpdateTruck {
-  id: string 
-  carrierId: string  
+  id: string
+  carrierId: string
 }
 
 export interface ParseUpdateTruck extends UpdateTruck {
   id: number
-  carrierId: number 
+  carrierId: number
 }
 
 export interface TruckFilter {
