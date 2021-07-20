@@ -3,6 +3,8 @@ import TruckRepository from '../repositories/truck-repository'
 import { FastifyInstance } from 'fastify';
 import { TruckFilterGet } from '../controllers/propsTypes'
 import { FindManyOptions } from 'typeorm';
+const camelToSnakeCase = (str) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+const generateFilterSearchText = (str: string) => ` (array_to_string("VwTruckList"."registration_number", ',')  like '%${str}%' or "VwTruckList"."owner"->>'fullName' like '%${str}%')`
 
 const enum_status = {
   0: 'INACTIVE', 1: 'ACTIVE'
@@ -15,7 +17,7 @@ export default class SearchServiceGet {
 
   async search(server: FastifyInstance, query: TruckFilterGet): Promise<any> {
     console.log("Filter :: ", query)
-    let { rowsPerPage, page, truckTypes: tt, workingZones: wr, descending, sortBy = "id", status } = query;
+    let { rowsPerPage, page, truckTypes: tt, workingZones: wr, descending = true, sortBy = "id", status, searchText } = query;
     const truckTypes = tt && typeof tt == 'string' ? JSON.parse(tt) : []
     const workingZones = wr && typeof wr == 'string' ? JSON.parse(wr) : []
 
@@ -59,19 +61,27 @@ export default class SearchServiceGet {
 
     const filterTruckFinal = filterTruck ? `"VwTruckList"."truck_type" in (${filterTruck}) ` : ``
     const filterStatus = (status != undefined || status != null) ? `${`"VwTruckList"."approve_status" = '${enum_status[status]}'`}` : ``
+    const filterSearchText = searchText ? generateFilterSearchText(searchText) : ``
 
-    const finalFilter: string = filterTruck ? `${filterTruckFinal} ${filterProvince ? `and ${filterProvince}` : ``} ${filterStatus ? `and ${filterStatus}` : ``}`
-      : `${filterProvince} ${filterProvince && filterStatus ? `and ${filterStatus}` : filterStatus}`
+    let arrFilter: string[] = []
+
+    if(filterTruckFinal) arrFilter.push(filterTruckFinal)
+    if(filterProvince) arrFilter.push(filterProvince) 
+    if(filterStatus) arrFilter.push(filterStatus)
+    if(filterSearchText) arrFilter.push(filterSearchText)
+    console.log("arr filter :: ", arrFilter.join(" and "))
 
 
-    console.log("FinalFilter on  service :: ", finalFilter)
+    // const finalFilter: string = filterTruck ? `${filterTruckFinal} ${filterProvince ? `and ${filterProvince}` : ``} ${filterStatus ? `and ${filterStatus}` : ``}`
+    //   : `${filterProvince} ${filterProvince && filterStatus ? `and ${filterStatus}` : filterStatus}`
+    // console.log("FinalFilter on  service :: ", finalFilter)
 
     const findOptions: FindManyOptions = {
       take: realTake,
       skip: realPage,
-      where: finalFilter,
+      where: arrFilter.join(" and "),
       order: {
-        [`${sortBy}`]: descending ? "ASC" : "DESC"
+        [`${camelToSnakeCase(sortBy)}`]: descending ? "DESC" : "ASC"
       },
     };
 
@@ -94,7 +104,7 @@ export default class SearchServiceGet {
 
   async searchMe(server: FastifyInstance, query: TruckFilterGet, carrierId: number): Promise<any> {
     console.log("Filter :: ", query)
-    let { rowsPerPage, page, truckTypes: tt, workingZones: wr, descending, sortBy = 'id', status } = query;
+    let { rowsPerPage, page, truckTypes: tt, workingZones: wr, descending = true, sortBy = 'id', status } = query;
     const truckTypes = tt && typeof tt == 'string' ? JSON.parse(tt) : []
     const workingZones = wr && typeof wr == 'string' ? JSON.parse(wr) : []
 
@@ -148,7 +158,7 @@ export default class SearchServiceGet {
       skip: realPage,
       where: finalFilter,
       order: {
-        [`${sortBy}`]: descending ? "ASC" : "DESC"
+        [`${camelToSnakeCase(sortBy)}`]: descending ? "DESC" : "ASC"
       },
     };
 
@@ -165,14 +175,14 @@ export default class SearchServiceGet {
     console.log("Data in search FINAL :: ", response_final)
     return response_final
   }
-  
+
 
 
 
 
   async searchMyAll(server: FastifyInstance, query: TruckFilterGet, carrierId: number): Promise<any> {
     console.log("Filter :: ", query)
-    let { truckTypes: tt, workingZones: wr, descending, sortBy = 'id', status } = query;
+    let { truckTypes: tt, workingZones: wr, descending = true, sortBy = 'id', status } = query;
     const truckTypes = tt && typeof tt == 'string' ? JSON.parse(tt) : []
     const workingZones = wr && typeof wr == 'string' ? JSON.parse(wr) : []
 
@@ -210,7 +220,7 @@ export default class SearchServiceGet {
     const findOptions: FindManyOptions = {
       where: finalFilter,
       order: {
-        [`${sortBy}`]: descending ? "ASC" : "DESC"
+        [`${camelToSnakeCase(sortBy)}`]: descending ? "DESC" : "ASC"
       },
     };
 

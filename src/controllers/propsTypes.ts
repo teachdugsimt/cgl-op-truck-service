@@ -112,6 +112,7 @@ export interface TruckFilterGet {
   truckTypes?: string | undefined
   status?: string | undefined
   workingZones?: string | undefined
+  searchText?: string | undefined
 }
 
 

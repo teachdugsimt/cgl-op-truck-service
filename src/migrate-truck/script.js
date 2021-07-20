@@ -1,6 +1,130 @@
 const { Pool } = require('pg');
 const sql = require('sql');
 
+const oldHost = "cgl-db.cj4ycxviwust.ap-southeast-1.rds.amazonaws.com"
+const oldUser = 'postgres'
+const oldPassword = "7uZrE546PzCjEV^e^tKpvs43PJTnHN"
+const oldDB = 'cargolink'
+const oldPort = 5432
+
+const newHost = "cgl-db.cj4ycxviwust.ap-southeast-1.rds.amazonaws.com"
+const newUser = 'postgres'
+const newPassword = "7uZrE546PzCjEV^e^tKpvs43PJTnHN"
+const newDB = 'truck_service'
+const newPort = 5432
+
+const newDBUser = 'user_service'
+
+const oldConnection = {
+  host: oldHost,
+  user: oldUser,
+  password: oldPassword,
+  database: oldDB,
+  port: oldPort,
+}
+
+const newConnection = {
+  host: newHost,
+  user: newUser,
+  password: newPassword,
+  database: newDB,
+  port: newPort,
+}
+
+
+const createTable = async () => {
+  const clientTo = new Pool(newConnection);
+  const connectTo = await clientTo.connect();
+  const sqlCreateFavoriteSeq = `CREATE SEQUENCE IF NOT EXISTS favorite_seq;`
+  const sqlCreateFavorite = `
+  CREATE TABLE "public"."favorite" (
+      "id" int4 NOT NULL DEFAULT nextval('favorite_seq'::regclass),
+      "user_id" int4 NOT NULL,
+      "truck_id" int4,
+      "version" int4 NOT NULL DEFAULT 0,
+      "created_at" timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+      "updated_at" timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+      "created_user" varchar(254) DEFAULT NULL::character varying,
+      "updated_user" varchar(254) DEFAULT NULL::character varying,
+      "is_deleted" bool NOT NULL DEFAULT false,
+      PRIMARY KEY ("id")
+  );`;
+
+  const sqlCreateTruckSeq = `CREATE SEQUENCE IF NOT EXISTS truck_seq;`
+  const sqlDropTruckEnum = `DROP TYPE IF EXISTS "public"."status_enum";`
+  const sqlCreateTruckEnum = `CREATE TYPE "public"."status_enum" AS ENUM ('INACTIVE', 'ACTIVE');`
+  const sqlCreateTruck = `
+  CREATE TABLE "public"."truck" (
+    "id" int4 NOT NULL DEFAULT nextval('truck_seq'::regclass),
+    "name" varchar(255) DEFAULT NULL::character varying,
+    "carrier_id" int4 NOT NULL DEFAULT 0,
+    "registration_number" varchar(255) DEFAULT NULL::character varying,
+    "loading_weight" float8 DEFAULT 0,
+    "created_at" timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+    "created_user" varchar(254) DEFAULT NULL::character varying,
+    "updated_user" varchar(254) DEFAULT NULL::character varying,
+    "is_deleted" bool NOT NULL DEFAULT false,
+    "truck_type" int4 NOT NULL DEFAULT 0,
+    "approve_status" "public"."status_enum" NOT NULL DEFAULT 'INACTIVE'::status_enum,
+    "approve_date" timestamp(0) DEFAULT NULL::timestamp without time zone,
+    "group_truck_type" int4,
+    "is_tipper" bool DEFAULT false,
+    "stall_height" varchar(10) DEFAULT NULL::character varying,
+    "favorite" int4,
+    "created_from" int4 DEFAULT 1,
+    PRIMARY KEY ("id")
+);`;
+
+  const sqlCreateTruckPhotoSeq = `CREATE SEQUENCE IF NOT EXISTS truck_photo_seq;`
+  const sqlCreateTruckPhoto = `
+  CREATE TABLE "public"."truck_photo" (
+      "id" int4 NOT NULL DEFAULT nextval('truck_photo_seq'::regclass),
+      "truck_id" int4 NOT NULL,
+      "photo_name" varchar(255) NOT NULL,
+      "created_at" timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+      "updated_at" timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+      "created_user" varchar(254) DEFAULT NULL::character varying,
+      "updated_user" varchar(254) DEFAULT NULL::character varying,
+      "is_deleted" bool NOT NULL DEFAULT false,
+      "type" int4,
+      PRIMARY KEY ("id")
+  );`;
+
+  const sqlCreateTruckWorkingZoneSeq = `CREATE SEQUENCE IF NOT EXISTS truck_working_zone_seq;`
+  const sqlCreateTruckWorkingZone = `
+  CREATE TABLE "public"."truck_working_zone" (
+      "id" int4 NOT NULL DEFAULT nextval('truck_working_zone_seq'::regclass),
+      "truck_id" int4 NOT NULL,
+      "region" int4,
+      "province" int4,
+      "created_at" timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+      "updated_at" timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+      "created_user" varchar(254) DEFAULT NULL::character varying,
+      "updated_user" varchar(254) DEFAULT NULL::character varying,
+      "is_deleted" bool NOT NULL DEFAULT false,
+      PRIMARY KEY ("id")
+  );`;
+
+  await connectTo.query(sqlCreateFavoriteSeq);
+  await connectTo.query(sqlCreateFavorite);
+
+  await connectTo.query(sqlCreateTruckSeq);
+  await connectTo.query(sqlDropTruckEnum);
+  await connectTo.query(sqlCreateTruckEnum);
+  await connectTo.query(sqlCreateTruck);
+
+  await connectTo.query(sqlCreateTruckPhotoSeq);
+  await connectTo.query(sqlCreateTruckPhoto);
+
+  await connectTo.query(sqlCreateTruckWorkingZoneSeq);
+  await connectTo.query(sqlCreateTruckWorkingZone);
+}
+
+
+
+
+
 const TruckNewModel = sql.define({
   name: 'truck',
   columns: ["id", "name", "carrier_id", "registration_number", "loading_weight",
@@ -10,21 +134,9 @@ const TruckNewModel = sql.define({
 });
 
 const runTruck = async () => {
-  const client = new Pool({
-    host: 'cgl-dev-db.ccyrpfjhgi1v.ap-southeast-1.rds.amazonaws.com',
-    user: 'postgres',
-    password: '.9^Piv-.KlzZhZm.MU7vXZU7yE9I-4',
-    database: 'cargolink',
-    port: 5432,
-  });
+  const client = new Pool(oldConnection);
 
-  const clientNew = new Pool({
-    host: 'cgl-dev-db.ccyrpfjhgi1v.ap-southeast-1.rds.amazonaws.com',
-    user: 'postgres',
-    password: '.9^Piv-.KlzZhZm.MU7vXZU7yE9I-4',
-    database: 'truck_service',
-    port: 5432,
-  });
+  const clientNew = new Pool(newConnection);
 
   const connect = await client.connect();
   const connectNew = await clientNew.connect();
@@ -41,7 +153,7 @@ const runTruck = async () => {
     "registration_number": tr["registration_number"],
     "loading_weight": tr["loading_weight"],
     "truck_type": tr["truck_type"],
-    "approve_status": tr["approve_status"],
+    "approve_status": tr["approve_status"] == 0 ? "INACTIVE" : "ACTIVE",
     "approve_date": tr["approve_date"],
     "group_truck_type": tr["group_truck_type"],
     "is_tipper": tr["is_tipper"],
@@ -59,10 +171,6 @@ const runTruck = async () => {
 
 };
 
-
-
-
-
 const TruckWorkingZoneModel = sql.define({
   name: "truck_working_zone",
   columns: ["id", "truck_id", "region", "province", "is_deleted",
@@ -70,21 +178,9 @@ const TruckWorkingZoneModel = sql.define({
 })
 
 const runTruckWorkingZone = async () => {
-  const client = new Pool({
-    host: 'cgl-dev-db.ccyrpfjhgi1v.ap-southeast-1.rds.amazonaws.com',
-    user: 'postgres',
-    password: '.9^Piv-.KlzZhZm.MU7vXZU7yE9I-4',
-    database: 'cargolink',
-    port: 5432,
-  });
+  const client = new Pool(oldConnection);
 
-  const clientNew = new Pool({
-    host: 'cgl-dev-db.ccyrpfjhgi1v.ap-southeast-1.rds.amazonaws.com',
-    user: 'postgres',
-    password: '.9^Piv-.KlzZhZm.MU7vXZU7yE9I-4',
-    database: 'truck_service',
-    port: 5432,
-  });
+  const clientNew = new Pool(newConnection);
 
   const connect = await client.connect();
   const connectNew = await clientNew.connect();
@@ -110,7 +206,6 @@ const runTruckWorkingZone = async () => {
 
 };
 
-
 const TruckPhotoModel = sql.define({
   name: "truck_photo",
   columns: ["id", "truck_id", "photo_name", "is_deleted", "type",
@@ -118,21 +213,9 @@ const TruckPhotoModel = sql.define({
 })
 
 const runTruckPhoto = async () => {
-  const client = new Pool({
-    host: 'cgl-dev-db.ccyrpfjhgi1v.ap-southeast-1.rds.amazonaws.com',
-    user: 'postgres',
-    password: '.9^Piv-.KlzZhZm.MU7vXZU7yE9I-4',
-    database: 'cargolink',
-    port: 5432,
-  });
+  const client = new Pool(oldConnection);
 
-  const clientNew = new Pool({
-    host: 'cgl-dev-db.ccyrpfjhgi1v.ap-southeast-1.rds.amazonaws.com',
-    user: 'postgres',
-    password: '.9^Piv-.KlzZhZm.MU7vXZU7yE9I-4',
-    database: 'truck_service',
-    port: 5432,
-  });
+  const clientNew = new Pool(newConnection);
 
   const connect = await client.connect();
   const connectNew = await clientNew.connect();
@@ -158,4 +241,268 @@ const runTruckPhoto = async () => {
 
 };
 
-runTruckPhoto()
+const TruckFavoriteModel = sql.define({
+  name: "favorite",
+  columns: ["id", "user_id", "truck_id", "version", "is_deleted",
+    "created_at", "updated_at", "created_user", "updated_user"]
+})
+
+const runTruckFavorite = async () => {
+  const client = new Pool(oldConnection);
+
+  const clientNew = new Pool(newConnection);
+
+  const connect = await client.connect();
+  const connectNew = await clientNew.connect();
+
+  // type : array
+  const { rows: oldTruckFavorite } = await connect.query(`SELECT * FROM dtb_favorite_truck_job WHERE truck_id is not null;`);
+  console.log("Old Favorite truck :> ", oldTruckFavorite)
+  // type :  array
+  const newTruckFavorite = oldTruckFavorite.map((tr) => ({
+    "id": tr["id"],
+    "user_id": tr["user_id"],
+    "truck_id": tr["truck_id"],
+    "version": tr["version"],
+    "is_deleted": tr["is_deleted"],
+    "created_at": tr["created_at"],
+    "updated_at": tr["updated_at"],
+    "created_user": tr["created_user"],
+    "updated_user": tr["updated_user"]
+  }));
+
+  const rowQueryTruckFavorite = TruckFavoriteModel.insert(newTruckFavorite).toQuery();
+  await connectNew.query(rowQueryTruckFavorite);
+
+};
+
+
+
+const createExtendsion = async () => {
+  const connectNew = new Pool(newConnection)
+  const connectNewDB = await connectNew.connect();
+  const sqlCreateExtensionDblink = `CREATE EXTENSION IF NOT EXISTS dblink;`;
+
+  const sqlCreateExtensionFdw = `CREATE EXTENSION IF NOT EXISTS postgres_fdw;`;
+
+  const sqlCreateDblinkConnect = `GRANT EXECUTE ON FUNCTION dblink_connect(text) TO public;`;
+
+  const sqlCreateUserService = `CREATE server userserver foreign data wrapper postgres_fdw
+OPTIONS (dbname 'user_service', host '${newHost}');`;
+
+  const sqlCreateUserMapping = `CREATE USER MAPPING FOR "public"
+SERVER userserver OPTIONS (user '${newUser}', password '${newPassword}');`;
+
+  const sqlCreateBookingService = `CREATE server bookingservice foreign data wrapper postgres_fdw
+  OPTIONS (dbname 'booking_service', host '${newHost}');`;
+
+  const sqlCreateBookingMapping = `CREATE USER MAPPING FOR "public"
+  SERVER bookingservice OPTIONS(user '${newUser}', password '${newPassword}');`
+
+
+  await connectNewDB.query(sqlCreateExtensionDblink);
+  await connectNewDB.query(sqlCreateExtensionFdw);
+  await connectNewDB.query(sqlCreateDblinkConnect);
+  await connectNewDB.query(sqlCreateUserService);
+  await connectNewDB.query(sqlCreateUserMapping);
+  await connectNewDB.query(sqlCreateBookingService);
+  await connectNewDB.query(sqlCreateBookingMapping);
+}
+
+const createView = async () => {
+  const connectNew = new Pool(newConnection)
+  const connectNewDB = await connectNew.connect();
+
+  const sqlCreateViewMyTruck = `CREATE VIEW vw_my_truck AS 
+  SELECT truck.id,
+  truck.approve_status,
+  truck.loading_weight,
+  string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+  truck.stall_height,
+  ( SELECT count(*) AS count
+         FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id,status FROM booking'::text) book2(id integer, truck_id integer, requester_type text, accepter_user_id integer, status text)
+        WHERE book2.truck_id = truck.id AND book2.requester_type = 'JOB_OWNER'::text AND book2.status = 'WAITING'::text) AS quotation_number,
+  truck.is_tipper AS tipper,
+  truck.truck_type,
+  truck.created_at,
+  truck.updated_at,
+  truck.carrier_id,
+      CASE
+          WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
+          ELSE COALESCE('[]'::json)
+      END AS work_zone
+ FROM truck truck
+   LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
+GROUP BY truck.id;`
+
+  const sqlCreateViewMyTruckId = `CREATE VIEW vw_my_truck_id AS 
+SELECT truck.id,
+truck.approve_status,
+truck.loading_weight,
+string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+truck.stall_height,
+( SELECT count(*) AS count
+       FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id,status FROM booking'::text) book2(id integer, truck_id integer, requester_type text, accepter_user_id integer, status text)
+      WHERE book2.truck_id = truck.id AND book2.requester_type = 'JOB_OWNER'::text AND book2.status = 'WAITING'::text) AS quotation_number,
+    CASE
+        WHEN truck.id = bookv.truck_id THEN json_agg(json_build_object('id', bookv.id, 'avatar', bookv.avatar, 'fullname', bookv.fullname, 'bookingdatetime', bookv.bookingdatetime))
+        ELSE COALESCE('[]'::json)
+    END AS quotations,
+truck.is_tipper AS tipper,
+truck.truck_type,
+truck.created_at,
+truck.updated_at,
+( SELECT json_object_agg(
+            CASE
+                WHEN tp.type = 1 THEN 'front'::text
+                WHEN tp.type = 2 THEN 'back'::text
+                WHEN tp.type = 3 THEN 'left'::text
+                WHEN tp.type = 4 THEN 'right'::text
+                ELSE 'none'::text
+            END, tp.photo_name) AS truck_photos
+       FROM truck_photo tp
+      WHERE tp.truck_id = truck.id) AS truck_photos,
+truck.carrier_id,
+    CASE
+        WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
+        ELSE COALESCE('[]'::json)
+    END AS work_zone
+FROM truck truck
+ LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
+ LEFT JOIN dblink('bookingservice'::text, 'SELECT id,truck_id,avatar,fullname,bookingdatetime,status FROM vw_job_booking_truck_list'::text) bookv(id integer, truck_id integer, avatar json, fullname text, bookingdatetime text, status text) ON bookv.truck_id = truck.id AND bookv.status = 'WAITING'::text
+GROUP BY truck.id, bookv.truck_id, bookv.status;`
+
+  const sqlCreateViewTruckDetails = `CREATE VIEW vw_truck_details AS 
+SELECT truck.id,
+truck.approve_status,
+truck.loading_weight,
+string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+truck.stall_height,
+truck.is_tipper AS tipper,
+truck.truck_type,
+truck.created_at,
+truck.updated_at,
+truck.carrier_id,
+( SELECT json_object_agg(
+            CASE
+                WHEN tp.type = 1 THEN 'front'::text
+                WHEN tp.type = 2 THEN 'back'::text
+                WHEN tp.type = 3 THEN 'left'::text
+                WHEN tp.type = 4 THEN 'right'::text
+                ELSE 'none'::text
+            END, tp.photo_name) AS truck_photos
+       FROM truck_photo tp
+      WHERE tp.truck_id = truck.id) AS truck_photos,
+    CASE
+        WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
+        ELSE COALESCE('[]'::json)
+    END AS work_zone,
+json_build_object('id', usr.id, 'fullName', usr.fullname, 'companyName', usr.fullname, 'email', usr.email, 'mobileNo', usr.phone_number, 'avatar', json_build_object('object', usr.avatar)) AS owner,
+truck.created_from
+FROM truck truck
+ LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
+ LEFT JOIN dblink('userserver'::text, 'SELECT id,email,fullname,phone_number,avatar FROM user_profile'::text) usr(id integer, email text, fullname text, phone_number text, avatar text) ON usr.id = truck.carrier_id
+GROUP BY truck.id, usr.id, usr.email, usr.fullname, usr.phone_number, usr.avatar;`
+
+  const sqlCreateViewTruckFavorite = `CREATE VIEW vw_truck_favorite AS 
+SELECT truck.id,
+fav.user_id,
+truck.approve_status,
+truck.loading_weight,
+string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+truck.stall_height,
+truck.is_tipper AS tipper,
+truck.truck_type,
+truck.created_at,
+truck.updated_at,
+truck.carrier_id,
+json_build_object('id', usr.id, 'fullName', usr.fullname, 'companyName', usr.fullname, 'email', usr.email, 'mobileNo', usr.phone_number, 'avatar', json_build_object('object', usr.avatar)) AS owner,
+    CASE
+        WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
+        ELSE COALESCE('[]'::json)
+    END AS work_zone
+FROM favorite fav
+ LEFT JOIN truck truck ON truck.id = fav.truck_id
+ LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
+ LEFT JOIN dblink('userserver'::text, 'SELECT id,email,fullname,phone_number,avatar FROM user_profile'::text) usr(id integer, email text, fullname text, phone_number text, avatar text) ON usr.id = truck.carrier_id
+GROUP BY fav.user_id, truck.id, usr.id, usr.email, usr.fullname, usr.phone_number, usr.avatar;`
+
+  const sqlCreateViewTruckList = `CREATE VIEW vw_truck_list AS 
+SELECT truck.id,
+truck.approve_status,
+truck.loading_weight,
+string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+truck.stall_height,
+( SELECT count(*) AS count
+       FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id FROM booking'::text) book2(id integer, truck_id integer, requester_type text, accepter_user_id integer)
+      WHERE book2.truck_id = truck.id AND book2.requester_type = 'JOB_OWNER'::text) AS quotation_number,
+truck.is_tipper AS tipper,
+truck.truck_type,
+truck.created_at,
+truck.updated_at,
+truck.carrier_id,
+json_build_object('id', usr.id, 'fullName', usr.fullname, 'companyName', usr.fullname, 'email', usr.email, 'mobileNo', usr.phone_number, 'avatar', json_build_object('object', usr.avatar)) AS owner,
+    CASE
+        WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
+        ELSE COALESCE('[]'::json)
+    END AS work_zone
+FROM truck truck
+ LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
+ LEFT JOIN dblink('userserver'::text, 'SELECT id,email,fullname,phone_number,avatar FROM user_profile'::text) usr(id integer, email text, fullname text, phone_number text, avatar text) ON usr.id = truck.carrier_id
+GROUP BY truck.id, usr.id, usr.email, usr.fullname, usr.phone_number, usr.avatar;`
+
+  await connectNewDB.query(sqlCreateViewMyTruck);
+  await connectNewDB.query(sqlCreateViewMyTruckId);
+  await connectNewDB.query(sqlCreateViewTruckDetails);
+  await connectNewDB.query(sqlCreateViewTruckFavorite);
+  await connectNewDB.query(sqlCreateViewTruckList);
+}
+
+const updateCarrierIdGroupNewUser = async () => {
+  const clientUserService = new Pool({
+    host: newHost,
+    user: newUser,
+    password: newPassword,
+    database: newDBUser,
+    port: newPort,
+  });
+
+  const clientTruckService = new Pool(newConnection)
+
+  const sqlSelectBackupUserId = `SELECT current_user_id, user_ids FROM backup_user_id;`;
+
+  const connectUserService = await clientUserService.connect();
+  const newTruckConnection = await clientTruckService.connect();
+
+  const { rows: backupUserId } = await connectUserService.query(sqlSelectBackupUserId);
+
+  for (const attr of backupUserId) {
+    await newTruckConnection.query(`UPDATE truck
+      SET carrier_id = ${attr.current_user_id}
+      WHERE carrier_id = ANY(ARRAY[${attr.user_ids}])`);
+  }
+
+  console.log('Finished');
+  return true;
+
+}
+
+
+const main = async () => {
+  try {
+    await createExtendsion()
+    await createTable()
+
+    await createView()
+
+    await runTruck()
+    await runTruckWorkingZone()
+    await runTruckPhoto()
+    await runTruckFavorite()
+    await updateCarrierIdGroupNewUser()
+    return true
+  } catch (error) {
+    throw error
+  }
+}
+main()

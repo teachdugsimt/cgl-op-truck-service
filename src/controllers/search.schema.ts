@@ -103,6 +103,7 @@ export const searchGetSchema: FastifySchema = {
       truckTypes: { type: 'string', nullable: true },
       status: { type: 'number', nullable: true },
       workingZones: { type: 'string', nullable: true },
+      searchText: { type: 'string', nullable: true }
     }
   },
   response: {

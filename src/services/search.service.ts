@@ -2,6 +2,9 @@ import { Service, Initializer, Destructor } from 'fastify-decorators';
 import TruckRepository from '../repositories/truck-repository'
 import { FastifyInstance } from 'fastify';
 import { TruckFilter } from '../controllers/propsTypes'
+import { FindManyOptions } from 'typeorm';
+
+const camelToSnakeCase = (str) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 @Service()
 export default class SearchService {
   @Initializer()
@@ -10,7 +13,7 @@ export default class SearchService {
 
   async search(server: FastifyInstance, body: TruckFilter): Promise<any> {
     console.log("Filter :: ", body)
-    let { rowsPerPage, page, truckTypes, workingZones } = body;
+    let { rowsPerPage, page, truckTypes, workingZones, descending = true, sortBy = 'id' } = body;
     let realPage: number;
     let realTake: number;
     if (rowsPerPage) realTake = +rowsPerPage;
@@ -54,11 +57,14 @@ export default class SearchService {
       : `${provinceFilterString}`
     console.log("FinalFilter on  service :: ", finalFilter)
 
-    const findOptions: any = {
+    const findOptions: FindManyOptions = {
       take: realTake,
       skip: realPage,
       // where: `"VwTruckList"."work_zone"::TEXT like '%"province" : 1%'`
-      where: finalFilter
+      where: finalFilter,
+      order: {
+        [`${camelToSnakeCase(sortBy)}`]: descending ? "DESC" : "ASC"
+      },
       // where: [{ '' }],
     };
 
