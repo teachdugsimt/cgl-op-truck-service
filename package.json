@@ -36,6 +36,7 @@
     "fastify-decorators": "^3.9.1",
     "fastify-plugin": "^3.0.0",
     "fastify-swagger": "^4.7.0",
+    "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "pg": "^8.6.0",
     "pino-pretty": "^4.7.1",

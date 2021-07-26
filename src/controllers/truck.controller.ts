@@ -115,17 +115,20 @@ export default class TruckController {
       schema: updateTruck
     },
   })
-  async updateTruck(req: FastifyRequest<{ Body: RawUpdateTruck, Params: { id: string } }>, reply: FastifyReply): Promise<any> {
+  async updateTruck(req: FastifyRequest<{ Body: RawUpdateTruck, Params: { id: string }, Headers: { authorization: string } }>, reply: FastifyReply): Promise<any> {
     try {
       const data: any = req.body
-      const id = util.decodeUserId(req.params.id);
-      const carrierId = util.decodeUserId(req.body.carrierId);
-      console.log("Decode id :  ", id)
-      console.log("Carrierr id ::  ", carrierId)
-      data.id = id
-      data.carrierId = carrierId
 
-      const result = await this.truckService?.updateTruck(TruckController.instance, data)
+      const id = util.decodeUserId(req.params.id);
+
+      const userId = util.getUserIdByToken(req.headers.authorization)
+      const decodeUserId  = util.decodeUserId(userId)
+      
+      console.log("Decode id :  ", id)
+      data.id = id
+      // data.carrierId = carrierId
+
+      const result = await this.truckService?.updateTruck(TruckController.instance, data, decodeUserId)
       return result ? true : false
 
     } catch (err) {

@@ -30,10 +30,9 @@ export default class TruckService {
     return result
   }
 
-  async updateTruck(server: FastifyInstance, data: ParseUpdateTruck): Promise<any> {
+  async updateTruck(server: FastifyInstance, data: ParseUpdateTruck, userId: string): Promise<any> {
     const repo = new TruckRepository()
-    const result = await repo.updateTruck(server, data)
-    return result
+    return repo.updateTruck(server, data, userId)
   }
 
   countTrucks(response: Array<ModelTruck>): number {

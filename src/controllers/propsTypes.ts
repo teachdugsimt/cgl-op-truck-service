@@ -93,7 +93,7 @@ export interface RawUpdateTruck extends UpdateTruck {
 
 export interface ParseUpdateTruck extends UpdateTruck {
   id: number
-  carrierId: number
+  carrierId?: number
 }
 
 export interface TruckFilter {

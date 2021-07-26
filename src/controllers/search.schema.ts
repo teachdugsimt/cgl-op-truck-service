@@ -33,6 +33,7 @@ const inputUpdateTruck = {
   require: ['carrierId'],
   properties: {
     carrierId: { type: 'string' },
+    id: { type: 'string' },
     truckTypes: { type: 'number' },
     loadingWeight: { type: 'number', nullable: true },
     stallHeight: { type: 'string', nullable: true },
@@ -146,6 +147,13 @@ export const createTruck: FastifySchema = {
 }
 
 export const updateTruck: FastifySchema = {
+  headers: {
+    type: 'object',
+    properties: {
+      authorization: { type: 'string' }
+    },
+    require: ['authorization']
+  },
   body: inputUpdateTruck,
   params: { id: { type: 'string' } },
   response: {

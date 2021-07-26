@@ -1,5 +1,13 @@
 const { Pool } = require('pg');
 const sql = require('sql');
+const jwt = require('jsonwebtoken')
+const axios = require('axios')
+const Hashids = require('hashids');
+// const Utility = require('utility-layer/dist/security');
+// const util = new Utility();
+
+const salt = 'secretkeyforcargolinkproject'
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 
 const oldHost = "cgl-db.cj4ycxviwust.ap-southeast-1.rds.amazonaws.com"
 const oldUser = 'postgres'
@@ -488,18 +496,127 @@ const updateCarrierIdGroupNewUser = async () => {
 }
 
 
+
+
+
+
+const getNewTruckType = (oldTruckType) => {
+  if (oldTruckType == 3) return 9;        // oldName: รถ 6 ล้อตู้คอก
+  else if (oldTruckType == 7) return 2;    // oldName: รถกระบะ 4 ล้อพื้นเรียบ
+  else if (oldTruckType == 8) return 21;    // oldName: รถ 10 ล้อ เครน
+  else if (oldTruckType == 10) return 27;   // oldName: รถบรรทุกรถ
+  else if (oldTruckType == 13) return 12;   // oldName: รถบรรทุกของเหลว 6 ล้อ
+  else if (oldTruckType == 14) return 18;   // oldName: รถ 10 ล้อ เคมีภัณฑ์
+  else if (oldTruckType == 15) return 29;   // oldName: อื่นๆ
+  else if (oldTruckType == 17) return 4;   // oldName: รถกระบะ 4 ล้อตู้ทึบ
+  else if (oldTruckType == 18) return 5;   // oldName: รถกระบะ 4 ล้อ ห้องเย็น
+  else if (oldTruckType == 19) return 6;   // oldName: รถกระบะ 4 ล้อหลังคาสูงทึบ
+  else if (oldTruckType == 21) return 10;   // oldName: รถ 6 ล้อ ตู้ทึบ
+  else if (oldTruckType == 22) return 7;   // oldName: รถ 6 ล้อพื้นเรียบ
+  else if (oldTruckType == 23) return 28;   // oldName: รถบรรทุกจักรยานยนต์
+  else if (oldTruckType == 24) return 8;   // oldName: รถ 6 ล้อ กระบะ
+  else if (oldTruckType == 25) return 11;   // oldName: รถ 6 ล้อ ห้องเย็น
+  else if (oldTruckType == 26) return 15;   // oldName: รถ 10 ล้อคอก
+  else if (oldTruckType == 27) return 16;   // oldName: รถ 10 ล้อ ตู้ทึบ
+  else if (oldTruckType == 28) return 14;   // oldName: รถ 10 ล้อ พื้นเรียบ
+  else if (oldTruckType == 29) return 19;   // oldName: รถ 10 ล้อบรรทุกของเหลว
+  else if (oldTruckType == 30) return 17;   // oldName: รถ10 ล้อ ห้องเย็น
+  else if (oldTruckType == 31) return 22;   // oldName: รถเทรลเลอร์ พื้นเรียบ
+  else if (oldTruckType == 33) return 25;   // oldName: รถ 10 ล้อ พ่วงตู้ทึบ
+  else if (oldTruckType == 34) return 26;   // oldName: รถ 10 ล้อ พ่วง ห้องเย็น
+  else if (oldTruckType == 36) return 24;   // oldName: รถ 10 ล้อ พ่วงคอก
+  else if (oldTruckType == 37) return 31;   // oldName: รถหัวลาก ตู้ทึบ
+  else if (oldTruckType == 38) return 32;   // oldName: รถหัวลาก ห้องเย็น
+  else if (oldTruckType == 39) return 13;   // oldName: รถ 6 ล้อ เครน
+  else if (oldTruckType == 40) return 1;   // oldName: รถกระบะ 4 ล้อ
+  else if (oldTruckType == 41) return 20;   // oldName: รถ 10 ล้อ บรรทุกน้ำมัน
+  else if (oldTruckType == 42) return 23;   // oldName: รถเทรลเลอร์คอก
+  else if (oldTruckType == 48) return 30;   // oldName: รถหัวลาก
+  else if (oldTruckType == 49) return 3;   // oldName: รถกระบะ 4 ล้อ คอก
+  else return 1
+}
+const mapNewTruckType = async () => {
+  const clientTruckService = new Pool(newConnection)
+  const newTruckConnection = await clientTruckService.connect();
+  const { rows: RowTruck } = await newTruckConnection.query(`SELECT * FROM truck;`);
+
+  for (const attr of RowTruck) {
+    const newTruckType = getNewTruckType(attr.truck_type)
+    await newTruckConnection.query(`UPDATE truck
+      SET truck_type = ${newTruckType}
+      WHERE id = ${attr.id} and truck_type = ${attr.truck_type}`);
+  }
+
+  console.log('Finished');
+  return true;
+}
+
+const generateToken = (userId) => {
+  const hashids = new Hashids(salt, 8, alphabet);
+  const id = hashids.encode(userId);
+  return jwt.sign(
+    {
+      sub: 'db98d3b0-5540-41b5-ad02-3f0eacb0e57c',
+      roles: 'Admin|Driver',
+      iss: 'https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_hIWBSYz7z',
+      'cognito:username': 'db98d3b0-5540-41b5-ad02-3f0eacb0e57c',
+      'custom:userId': id,
+      origin_jti: '657b04a4-9ada-40ff-8fa7-1c5d51a59d34',
+      aud: '4qkd14u6na0fo1tfhtrdari41i',
+      event_id: 'bc81717a-0a24-4ba0-a39b-fa8ee2733907',
+      token_use: 'id',
+      jti: '9383cc14-f293-494d-9b94-3f096225d1e7',
+      auth_time: Math.floor(new Date() / 1000),
+      exp: Math.floor((new Date() + 100000) / 1000),
+      iat: Math.floor(new Date() / 1000),
+    },
+    'JDbHwbVvTEgs9uRxEV6cCA3gdMmgSLJ8Da4lTfjAip8=',
+    { algorithm: 'HS512' }
+  );
+}
+const migrationImage = async () => {
+  const clientNew = new Pool(newConnection);
+
+  const connectNew = await clientNew.connect();
+
+  // type : array
+  const { rows: Truck } = await connectNew.query(`SELECT * FROM truck`);
+  const { rows: TruckPhoto } = await connectNew.query(`SELECT * FROM truck_photo`);
+
+  // type :  array
+  const mappingTruckPhoto = await Promise.all(TruckPhoto.map(async (trp) => {
+    const findTruckCarrier = Truck.find(e => e.id == trp.id)
+    const carrier_id = findTruckCarrier.carrier_id || null
+    if (carrier_id) {
+      const authorization = generateToken(carrier_id)
+      if (trp.photo_name.includes('staging.') || trp.photo_name.includes('trucking.')) {
+        console.log("Url ::  ", trp.photo_name)
+        const getImage = await axios.get(trp.photo_name, { headers: { Authorization: authorization || '' } })
+        console.log("Image :: ", getImage.data)
+      }
+    }
+  }))
+
+  return true
+}
+
+
+
 const main = async () => {
   try {
-    await createExtendsion()
-    await createTable()
+    // await createExtendsion()
+    // await createTable()
 
-    await createView()
+    // await createView()
 
-    await runTruck()
-    await runTruckWorkingZone()
-    await runTruckPhoto()
-    await runTruckFavorite()
-    await updateCarrierIdGroupNewUser()
+    // await runTruck()
+    // await runTruckWorkingZone()
+    // await runTruckPhoto()
+    // await runTruckFavorite()
+    // await updateCarrierIdGroupNewUser()
+    // await mapNewTruckType()
+
+    // // await migrationImage()
     return true
   } catch (error) {
     throw error

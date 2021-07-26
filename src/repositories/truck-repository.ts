@@ -193,7 +193,7 @@ export default class TruckRepository {
       throw error
     }
   }
-  async updateTruck(server: any, data: ParseUpdateTruck) {
+  async updateTruck(server: any, data: ParseUpdateTruck, userId: string) {
     try {
       let repository: Repository<DtbTruck> = await server?.db?.truck
       let repositoryTWR: Repository<DtbTruckWorkingZone> = await server?.db.truckWorkingZone
@@ -203,13 +203,13 @@ export default class TruckRepository {
 
       const saveTruck: any = await repository.save(repository.create({
         id: data.id,
-        carrierId: data?.carrierId,
+        // carrierId: data?.carrierId,
         registrationNumber: data.registrationNumber && data.registrationNumber.length ? data.registrationNumber.join(' ') : null,
         loadingWeight: data.loadingWeight || 0,
         stallHeight: data.stallHeight || "LOW",
         isTipper: data.tipper || false,
         truckType: data.truckType,
-        updatedUser: "" + data?.carrierId,
+        updatedUser: "" + userId,
       }))
       console.log("SaveTruck : ", saveTruck)
 
@@ -217,14 +217,14 @@ export default class TruckRepository {
 
       const oldZone = await repositoryTWR.find({ truck_id: data.id })
       const newZoneMap = data.workingZones && data.workingZones.length > 0 ? data.workingZones : []
-      const oldZoneMap = oldZone.map(e => ({ region: e.region, province: e.province }))
+      const oldZoneMap = oldZone && oldZone.length ? oldZone.map(e => ({ region: e.region, province: e.province })) : []
 
       const list_delete_zone = _.differenceWith(oldZoneMap, newZoneMap, _.isEqual);
       const list_add_new_zone = _.differenceWith(newZoneMap, oldZoneMap, _.isEqual);
 
       if (list_delete_zone && list_delete_zone.length > 0) {
         const provincePure = list_delete_zone.map(e => e.province)
-        await await repositoryTWR.createQueryBuilder()
+        await repositoryTWR.createQueryBuilder()
           .delete().from(DtbTruckWorkingZone)
           .where('province IN (:...provinces)', {
             truck_id: data.id,
@@ -240,7 +240,7 @@ export default class TruckRepository {
       const tmpPhoto: TruckPhotoUpdate = data.truckPhotos
       console.log("Truck Photos :: ", tmpPhoto)
       const listOldPhoto = await repositoryTPhoto.find({ truckId: data.id })
-      //  delete ALL 
+      console.log("List old Truck photos :: ", listOldPhoto)
       if (tmpPhoto) {
         const deleteList: any = [] // do first before insert
         const newList: ListNewUpload[] = []
