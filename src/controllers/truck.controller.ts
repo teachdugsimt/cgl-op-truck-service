@@ -1,6 +1,5 @@
 import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify';
 import { Controller, GET, POST, PUT, getInstanceByToken, FastifyInstanceToken } from 'fastify-decorators';
-import PingService from '../services/ping.service';
 import SearchService from '../services/search.service';
 import SearchServiceGet from '../services/search-get.service';
 import TruckService from '../services/truck.service';
@@ -17,7 +16,6 @@ const util = new Utility();
 export default class TruckController {
 
   public static instance: FastifyInstance = getInstanceByToken(FastifyInstanceToken);
-  private pingService = getInstanceByToken<PingService>(PingService);
   private searchService = getInstanceByToken<SearchService>(SearchService);
   private truckService = getInstanceByToken<TruckService>(TruckService);
   private searchServiceGet = getInstanceByToken<SearchServiceGet>(SearchServiceGet);
