@@ -551,6 +551,26 @@ const mapNewTruckType = async () => {
   return true;
 }
 
+
+const updateSequenceAllTable = () => {
+  const clientTruckService = new Pool(newConnection)
+  const newTruckConnection = await clientTruckService.connect();
+
+  const sqlUpdateSeqTruck = `SELECT setval('truck_seq', (select count(*) from truck), true);`
+  const sqlUpdateSeqTruckPhoto = `SELECT setval('truck_photo_seq', (select count(*) from truck_photo), true);`
+  const sqlUpdateSeqTruckWorkingZone = `SELECT setval('truck_working_zone_seq', (select count(*) from truck_working_zone), true);`
+  const sqlUpdateSeqFavorite = `SELECT setval('favorite_seq', (select count(*) from favorite), true);`
+  // 
+  await newTruckConnection.query(sqlUpdateSeqTruck);
+  await newTruckConnection.query(sqlUpdateSeqTruckPhoto);
+  await newTruckConnection.query(sqlUpdateSeqTruckWorkingZone);
+  await newTruckConnection.query(sqlUpdateSeqFavorite);
+  console.log('Update seq all table finish !!')
+  return true;
+}
+
+
+
 const generateToken = (userId) => {
   const hashids = new Hashids(salt, 8, alphabet);
   const id = hashids.encode(userId);
@@ -615,7 +635,8 @@ const main = async () => {
     // await runTruckFavorite()
     // await updateCarrierIdGroupNewUser()
     // await mapNewTruckType()
-
+    // await updateSequenceAllTable()
+    
     // // await migrationImage()
     return true
   } catch (error) {
