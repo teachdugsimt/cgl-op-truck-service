@@ -2,7 +2,7 @@ import { FastifySchema } from "fastify";
 const inputCreateTruck = {
   type: 'object',
   properties: {
-    carrierId: { type: 'number' },
+    carrierId: { type: 'string' },
     truckTypes: { type: 'number' },
     loadingWeight: { type: 'number', nullable: true },
     stallHeight: { type: 'string', nullable: true },

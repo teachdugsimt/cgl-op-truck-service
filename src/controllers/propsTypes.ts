@@ -32,8 +32,7 @@ export interface TruckList {
   }
 }
 
-export interface Truck {
-  carrierId: number
+export interface TruckWithoutCarrierId {
   truckType: number
   loadingWeight?: number | null
   stallHeight: string | null
@@ -50,6 +49,14 @@ export interface Truck {
     province?: number | null
   }> | null
   createdFrom?: number | null
+}
+
+export interface Truck extends TruckWithoutCarrierId {
+  carrierId: string
+}
+
+export interface RawTruck extends TruckWithoutCarrierId {
+  carrierId: number
 }
 
 

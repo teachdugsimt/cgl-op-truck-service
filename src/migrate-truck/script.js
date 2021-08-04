@@ -325,7 +325,7 @@ const createView = async () => {
   SELECT truck.id,
   truck.approve_status,
   truck.loading_weight,
-  string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+  string_to_array(truck.registration_number::text, ','::text) AS registration_number,
   truck.stall_height,
   ( SELECT count(*) AS count
          FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id,status FROM booking'::text) book2(id integer, truck_id integer, requester_type text, accepter_user_id integer, status text)
@@ -347,7 +347,7 @@ GROUP BY truck.id;`
 SELECT truck.id,
 truck.approve_status,
 truck.loading_weight,
-string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+string_to_array(truck.registration_number::text, ','::text) AS registration_number,
 truck.stall_height,
 ( SELECT count(*) AS count
        FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id,status FROM booking'::text) book2(id integer, truck_id integer, requester_type text, accepter_user_id integer, status text)
@@ -384,7 +384,7 @@ GROUP BY truck.id, bookv.truck_id, bookv.status;`
 SELECT truck.id,
 truck.approve_status,
 truck.loading_weight,
-string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+string_to_array(truck.registration_number::text, ','::text) AS registration_number,
 truck.stall_height,
 truck.is_tipper AS tipper,
 truck.truck_type,
@@ -417,7 +417,7 @@ SELECT truck.id,
 fav.user_id,
 truck.approve_status,
 truck.loading_weight,
-string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+string_to_array(truck.registration_number::text, ','::text) AS registration_number,
 truck.stall_height,
 truck.is_tipper AS tipper,
 truck.truck_type,
@@ -439,7 +439,7 @@ GROUP BY fav.user_id, truck.id, usr.id, usr.email, usr.fullname, usr.phone_numbe
 SELECT truck.id,
 truck.approve_status,
 truck.loading_weight,
-string_to_array(truck.registration_number::text, ' '::text) AS registration_number,
+string_to_array(truck.registration_number::text, ','::text) AS registration_number,
 truck.stall_height,
 ( SELECT count(*) AS count
        FROM dblink('bookingservice'::text, 'SELECT id,truck_id,requester_type,accepter_user_id FROM booking'::text) book2(id integer, truck_id integer, requester_type text, accepter_user_id integer)
@@ -464,6 +464,8 @@ GROUP BY truck.id, usr.id, usr.email, usr.fullname, usr.phone_number, usr.avatar
   await connectNewDB.query(sqlCreateViewTruckDetails);
   await connectNewDB.query(sqlCreateViewTruckFavorite);
   await connectNewDB.query(sqlCreateViewTruckList);
+  console.log("Finish Create View  !!")
+  return true
 }
 
 const updateCarrierIdGroupNewUser = async () => {
@@ -552,7 +554,7 @@ const mapNewTruckType = async () => {
 }
 
 
-const updateSequenceAllTable = () => {
+const updateSequenceAllTable = async () => {
   const clientTruckService = new Pool(newConnection)
   const newTruckConnection = await clientTruckService.connect();
 

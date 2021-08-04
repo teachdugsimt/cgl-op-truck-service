@@ -1,6 +1,6 @@
 import { DtbTruck, DtbTruckWorkingZone, TruckPhoto, FavoriteTruck } from '../models'
 import { Repository } from 'typeorm'
-import { Truck, ParseUpdateTruck, TruckPhotoUpdate } from '../controllers/propsTypes'
+import { RawTruck, ParseUpdateTruck, TruckPhotoUpdate } from '../controllers/propsTypes'
 import _ from "lodash";
 import axios from 'axios'
 import Utility from 'utility-layer/dist/security'
@@ -84,7 +84,7 @@ export default class TruckRepository {
       throw error
     }
   }
-  async createTruckV2(server: any, data: Truck) {
+  async createTruckV2(server: any, data: RawTruck) {
     try {
 
       let repository: Repository<DtbTruck> = await server?.db?.truck
@@ -94,7 +94,7 @@ export default class TruckRepository {
 
       const saveTruck: any = await repository.save(repository.create({
         carrierId: data?.carrierId,
-        registrationNumber: data.registrationNumber && data.registrationNumber.length ? data.registrationNumber.join(' ') : null,
+        registrationNumber: data.registrationNumber && data.registrationNumber.length ? data.registrationNumber.join(',') : null,
         loadingWeight: data.loadingWeight || 0,
         stallHeight: data.stallHeight || "LOW",
         isTipper: data.tipper || false,

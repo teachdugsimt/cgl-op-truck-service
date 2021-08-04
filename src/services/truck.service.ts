@@ -1,7 +1,7 @@
 import { Service, Initializer, Destructor } from 'fastify-decorators';
 import TruckRepository from '../repositories/truck-repository'
 import { FastifyInstance } from 'fastify';
-import { Truck, ParseUpdateTruck } from '../controllers/propsTypes'
+import { RawTruck, ParseUpdateTruck } from '../controllers/propsTypes'
 import _ from 'lodash'
 @Service()
 export default class TruckService {
@@ -22,7 +22,7 @@ export default class TruckService {
     return data
   }
 
-  async createTruck(server: FastifyInstance, data: Truck): Promise<any> {
+  async createTruck(server: FastifyInstance, data: RawTruck): Promise<any> {
     // console.log("Server :: ", server)
     console.log("Query String Create truck : ", data)
     const repo = new TruckRepository()

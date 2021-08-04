@@ -97,7 +97,12 @@ export default class TruckController {
   })
   async searchTruckHandler(req: FastifyRequest<{ Body: Truck, Headers: { authorization: string } }>, reply: FastifyReply): Promise<any> {
     try {
-      const result = await this.truckService?.createTruck(TruckController.instance, req.body)
+      const userId = req.body.carrierId
+      const parseUserId = util.decodeUserId(userId)
+      const newBody: any = req.body
+      newBody.carrierId = parseUserId
+      console.log("parse carrier id :: ", parseUserId)
+      const result = await this.truckService?.createTruck(TruckController.instance, newBody)
       console.log("Result create new truck  :: ", result)
       return { data: result }
 
@@ -120,8 +125,8 @@ export default class TruckController {
       const id = util.decodeUserId(req.params.id);
 
       const userId = util.getUserIdByToken(req.headers.authorization)
-      const decodeUserId  = util.decodeUserId(userId)
-      
+      const decodeUserId = util.decodeUserId(userId)
+
       console.log("Decode id :  ", id)
       data.id = id
       // data.carrierId = carrierId
