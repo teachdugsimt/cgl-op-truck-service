@@ -573,6 +573,31 @@ const updateSequenceAllTable = async () => {
 
 
 
+const processRegistration = (registration) => {
+  const newRegistration = registration.replace(/[@/]+/g, ",")
+  return newRegistration
+}
+const parseRegistrationNumber = async () => {
+  const clientTruckService = new Pool(newConnection)
+  const newTruckConnection = await clientTruckService.connect();
+
+  const { rows: RowTruck } = await newTruckConnection.query(`SELECT * FROM truck;`);
+
+  for (const attr of RowTruck) {
+    const newRegistration = processRegistration(attr.registration_number)
+    await newTruckConnection.query(`UPDATE truck
+      SET registration_number = '${newRegistration}'
+      WHERE id = ${attr.id}`);
+  }
+
+  console.log('Finished update registration');
+  return true;
+}
+
+
+
+
+
 const generateToken = (userId) => {
   const hashids = new Hashids(salt, 8, alphabet);
   const id = hashids.encode(userId);
@@ -624,6 +649,8 @@ const migrationImage = async () => {
 
 
 
+
+
 const main = async () => {
   try {
     // await createExtendsion()
@@ -638,7 +665,8 @@ const main = async () => {
     // await updateCarrierIdGroupNewUser()
     // await mapNewTruckType()
     // await updateSequenceAllTable()
-    
+
+    // await parseRegistrationNumber()
     // // await migrationImage()
     return true
   } catch (error) {
