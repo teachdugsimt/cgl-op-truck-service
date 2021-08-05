@@ -204,7 +204,7 @@ export default class TruckRepository {
       const saveTruck: any = await repository.save(repository.create({
         id: data.id,
         // carrierId: data?.carrierId,
-        registrationNumber: data.registrationNumber && data.registrationNumber.length ? data.registrationNumber.join(' ') : null,
+        registrationNumber: data.registrationNumber && data.registrationNumber.length ? data.registrationNumber.join(',') : null,
         loadingWeight: data.loadingWeight || 0,
         stallHeight: data.stallHeight || "LOW",
         isTipper: data.tipper || false,
