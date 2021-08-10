@@ -653,21 +653,20 @@ const migrationImage = async () => {
 
 const main = async () => {
   try {
-    // await createExtendsion()
-    // await createTable()
+    await createExtendsion()
+    await createTable()
 
-    // await createView()
+    await createView()
 
-    // await runTruck()
-    // await runTruckWorkingZone()
-    // await runTruckPhoto()
-    // await runTruckFavorite()
-    // await updateCarrierIdGroupNewUser()
-    // await mapNewTruckType()
-    // await updateSequenceAllTable()
+    await runTruck()
+    await runTruckWorkingZone()
+    await runTruckPhoto()
+    await runTruckFavorite()
+    await updateCarrierIdGroupNewUser()
+    await mapNewTruckType()
+    await updateSequenceAllTable()
 
-    // await parseRegistrationNumber()
-    // // await migrationImage()
+    await parseRegistrationNumber()
     return true
   } catch (error) {
     throw error
