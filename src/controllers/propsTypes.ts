@@ -131,3 +131,24 @@ export interface TruckListResponse {
   currentPage: number
   totalPages: number
 }
+
+
+export interface PureTruck {
+  id: number;
+  name: string | null;
+  carrierId: number;
+  registrationNumber: string | null;
+  loadingWeight: number | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  createdUser: string | null;
+  updatedUser: string | null;
+  isDeleted: boolean;
+  truckType: number;
+  approveStatus: number | string;
+  approveDate: Date | null;
+  groupTruckType: number | null;
+  isTipper: boolean | null;
+  stallHeight: string | null;
+  createdFrom: number | null;
+}

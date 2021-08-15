@@ -131,6 +131,40 @@ const createTable = async () => {
 
 
 
+const addDocumentColumnToTruck = async () => {
+  const clientTo = new Pool(newConnection);
+  const connectTo = await clientTo.connect();
+
+
+
+  const sqlAddDocument = `ALTER TABLE truck ADD document jsonb NULL;`
+
+  const sqlDropEnumDocumentStatus = `DROP TYPE IF EXISTS document_status_enum;`
+  const sqlAddEnumDocumentStatus = `CREATE TYPE document_status_enum AS ENUM ('NO_DOCUMENT', 'WAIT_FOR_VERIFIED', 'VERIFIED', 'REJECTED');`
+
+  const sqlAddDocumentStatusColumn = `alter table truck ADD document_status VARCHAR NULL;`
+  const sqlChangeDefaultDocumentStatus = `ALTER TABLE truck
+  ALTER COLUMN document_status DROP DEFAULT,
+  ALTER COLUMN document_status
+    SET DATA TYPE document_status_enum
+    USING document_status::text::document_status_enum,
+  ALTER COLUMN document_status SET DEFAULT 'NO_DOCUMENT';`
+  const sqlUpdateDefaultDocumentStatusIfNull = `update truck set document_status='NO_DOCUMENT' where document_status ISNULL;`
+
+
+
+  await connectTo.query(sqlAddDocument);
+  await connectTo.query(sqlDropEnumDocumentStatus);
+  await connectTo.query(sqlAddEnumDocumentStatus);
+  await connectTo.query(sqlAddDocumentStatusColumn);
+  await connectTo.query(sqlChangeDefaultDocumentStatus);
+  await connectTo.query(sqlUpdateDefaultDocumentStatusIfNull);
+
+  console.log("Finish add document column !!")
+  return true
+}
+
+
 
 
 const TruckNewModel = sql.define({
@@ -655,6 +689,7 @@ const main = async () => {
   try {
     await createExtendsion()
     await createTable()
+    await addDocumentColumnToTruck()
 
     await createView()
 

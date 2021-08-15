@@ -220,4 +220,58 @@ export const PostFavoriteTruck: FastifySchema = {
   }
 }
 
+export const generateUploadLinkResponse: FastifySchema = {
+  // body: {},
+  params: {
+    truckId: { type: 'string' }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        url: { type: 'string', nullable: true },
+        truckId: { type: 'string', nullable: true },
+      },
+      additionalProperties: false
+    }
+  }
+}
 
+export const deleteUploadLinkResponse: FastifySchema = {
+  // body: {},
+  params: {
+    truckId: { type: 'string' }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        data: { type: 'boolean' }
+      },
+      additionalProperties: false
+    }
+  }
+}
+
+export const updateTruckDocumentResponse: FastifySchema = {
+  // body: {},
+  params: {
+    truckId: { type: 'string' }
+  },
+  body: {
+    type: 'object',
+    properties: {
+      token: { type: 'string' },
+      url: { type: 'array', items: { type: 'string' } }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' }
+      },
+      additionalProperties: false
+    }
+  }
+}

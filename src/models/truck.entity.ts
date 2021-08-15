@@ -71,7 +71,7 @@ export class DtbTruck {
   @Column("integer", { name: "truck_type", default: () => "0" })
   truckType: number;
 
-  @Column("integer", { name: "approve_status", default: () => "'INACTIVE'::status_enum" })
+  @Column("character varying", { name: "approve_status", default: () => "'INACTIVE'::status_enum" })
   approveStatus: number | string;
 
   @Column("timestamp without time zone", {
@@ -102,6 +102,18 @@ export class DtbTruck {
 
   @Column("integer", { name: "created_from", default: 1 })
   createdFrom: number | null;
+
+  // @Column("character varying", { name: "document_status", default: () => "'NO_DOCUMENT'::document_status_enum" })
+  // documentStatus: string;
+  @Column("enum", {
+    name: "document_status",
+    enum: ["NO_DOCUMENT", "WAIT_FOR_VERIFIED", "VERIFIED", "REJECTED"],
+    default: () => "'NO_DOCUMENT'::document_status_enum"
+  })
+  documentStatus: "NO_DOCUMENT" | "WAIT_FOR_VERIFIED" | "VERIFIED" | "REJECTED";
+
+  @Column("jsonb", { name: "document", nullable: true })
+  document: object | null;
 
   @BeforeInsert()
   @BeforeUpdate()

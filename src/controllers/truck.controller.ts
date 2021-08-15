@@ -4,25 +4,29 @@ import SearchService from '../services/search.service';
 import SearchServiceGet from '../services/search-get.service';
 import TruckService from '../services/truck.service';
 import FavoriteService from '../services/favorite.service'
-import { TruckOne, TruckOneOnlyMe, TruckOneMST, FavoriteTruck, PostFavoriteTruck } from './truck.schema';
+import UpdateTruckProfileService from '../services/update-truck-profile.service'
+import TruckDocumentService from '../services/truck-document.service'
+import {
+  TruckOne, TruckOneOnlyMe, TruckOneMST, FavoriteTruck, PostFavoriteTruck, generateUploadLinkResponse,
+  deleteUploadLinkResponse, updateTruckDocumentResponse
+} from './truck.schema';
 import {
   searchGetSchema, createTruck, updateTruck, getMySchema, getAllMeSchema,
   getMyTruckSummary, getAllMeWithoutAuthorizeSchema
 } from './search.schema';
 import { RawUpdateTruck, Truck, TruckListResponse, TruckFilterGet } from './propsTypes'
+import TruckDynamodbRepository, { UploadLink } from '../repositories/upload-link.repository'
 import Utility from 'utility-layer/dist/security'
 const util = new Utility();
 @Controller({ route: '/api/v1/trucks' })
 export default class TruckController {
 
   public static instance: FastifyInstance = getInstanceByToken(FastifyInstanceToken);
-  private searchService = getInstanceByToken<SearchService>(SearchService);
   private truckService = getInstanceByToken<TruckService>(TruckService);
   private searchServiceGet = getInstanceByToken<SearchServiceGet>(SearchServiceGet);
   private favoriteTruckService = getInstanceByToken<FavoriteService>(FavoriteService);
-
-
-
+  private updateTruckProfileService = getInstanceByToken<UpdateTruckProfileService>(UpdateTruckProfileService);
+  private truckDocumentService = getInstanceByToken<TruckDocumentService>(TruckDocumentService);
 
   @GET({
     url: '/:id/mst',
@@ -276,6 +280,130 @@ export default class TruckController {
     } catch (err) {
       console.log("Raw Erorr Controller : ", err)
       return err
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  @POST({
+    url: '/:truckId/gen-doc-upload-link',
+    options: {
+      schema: generateUploadLinkResponse
+    }
+  })
+  async GenerateLinkUpload(req: FastifyRequest<{ Params: { truckId: string } }>, reply: FastifyReply): Promise<any> {
+    try {
+      if (req.params.truckId) {
+
+        const decodeId = util.decodeUserId(req.params.truckId)
+        const data = { truckId: req.params.truckId }
+        console.log("Data to jwt :: ", data)
+
+        const base_url = process.env.BACK_OFFICE_URL ? `${process.env.BACK_OFFICE_URL}/${process.env.USER_UPLOAD || 'truck/upload/'}?token=` : "https://dev.backoffice.cargolink.co.th/truck/upload?token="
+        const token = util.generateJwtToken(data)
+        const link = base_url + token
+
+        const repo = new TruckDynamodbRepository()
+        const everHaveToken: UploadLink = await repo.findAttachCodeWithTruck(decodeId)
+
+        let result: any
+        const uploadLinkObject = {
+          token,
+          truck_id: decodeId
+        }
+        if (everHaveToken && typeof everHaveToken && Object.keys(everHaveToken).length > 0) {
+          result = await repo.updateToken(uploadLinkObject)
+        } else {
+          result = await repo.createUploadLinkData(uploadLinkObject)
+        }
+
+        if (result && typeof result == "object")
+          return { url: link, truckId: req.params.truckId }
+        else return { url: null, truckId: req.params.truckId }
+      }
+    } catch (err) {
+      throw new Error(err)
+    }
+  }
+
+  @POST({
+    url: '/:truckId/clear-upload-link',
+    options: {
+      schema: deleteUploadLinkResponse
+    }
+  })
+  async ClearUploadLink(req: FastifyRequest<{ Params: { truckId: string } }>, reply: FastifyReply): Promise<any> {
+    try {
+      if (req.params.truckId) {
+        const decodeId = util.decodeUserId(req.params.truckId)
+        const repo = new TruckDynamodbRepository()
+        const result = await repo.deleteUploadLink(decodeId)
+
+        if (result && typeof result == "object")
+          return { data: true }
+        else return { data: false }
+      }
+    } catch (err) {
+      throw new Error(err)
+    }
+  }
+
+  @POST({  // call media/confirm & /:truckId/clear-upload-link
+    url: '/:truckId/update-truck-profile',
+    options: {
+      schema: updateTruckDocumentResponse
+    }
+  })
+  async updateUserProfile(req: FastifyRequest<{ Params: { truckId: string }, Body: { token: string, url: string[] } }>, reply: FastifyReply): Promise<any> {
+    try {
+      if (req.params.truckId) {
+
+        const decodeId = util.decodeUserId(req.params.truckId)
+        //  1. Validate token(latest upload link) in cgl_user_upload_link 
+        const repo = new TruckDynamodbRepository()
+        const uploadTokenLink = await repo.findAttachCodeWithTruck(decodeId)
+        if (!uploadTokenLink || (typeof uploadTokenLink == "object" && Object.keys(uploadTokenLink).length == 0))
+          reply.status(400).send({ message: "Link was expired, please contact manager" })
+
+        if (uploadTokenLink && uploadTokenLink.token != req.body.token) {
+          reply.status(400).send({ message: "Link was expired, please contact manager" })
+        }
+        console.log("Step 1 : upload link data : ", uploadTokenLink)
+
+        // 2. call media/confirm
+        if (Array.isArray(req.body.url) == false) {
+          reply.status(400).send({ message: "Invalid url format type" })
+        }
+        const confirmResult = await this.updateTruckProfileService.confirmMedia(req.body.url)
+
+        console.log("Step 2 : confirm media : ", confirmResult)
+
+        // 3. call id/clear-upload-link
+        if (confirmResult && confirmResult?.message == "confirm success") {
+          await this.truckDocumentService.updateUserFile(decodeId, req.body.url)
+          const controllerM = new TruckController()
+          const clearUploadLinkResult = await controllerM.ClearUploadLink(req, reply)
+          console.log("Step 3 : clear upload link : ", clearUploadLinkResult)
+          return { message: "Update success" }
+        } else {
+          reply.status(400).send({ message: "Invalid url entry" })
+        }
+      } 
+      else reply.status(400).send({message: "Invalid truckId"})
+    } catch (err) {
+      throw new Error(err)
     }
   }
 

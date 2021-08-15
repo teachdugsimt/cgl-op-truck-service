@@ -1,8 +1,11 @@
 import { DtbTruck, DtbTruckWorkingZone, TruckPhoto, FavoriteTruck } from '../models'
-import { Repository } from 'typeorm'
+import { Repository, FindOneOptions } from 'typeorm'
 import { RawTruck, ParseUpdateTruck, TruckPhotoUpdate } from '../controllers/propsTypes'
 import _ from "lodash";
 import axios from 'axios'
+import * as Types from '../controllers/propsTypes'
+import { FastifyInstance } from 'fastify';
+import { FastifyInstanceToken, getInstanceByToken } from 'fastify-decorators';
 import Utility from 'utility-layer/dist/security'
 const util = new Utility();
 
@@ -30,6 +33,19 @@ export default class TruckRepository {
         // { id: "ROLE_DEV" },
       ]
     }
+  }
+
+  private instance: FastifyInstance = getInstanceByToken(FastifyInstanceToken);
+  async findOne(id: number, options?: FindOneOptions): Promise<any> {
+    const server: any = this.instance
+    const truckRepository: Repository<DtbTruck> = server?.db?.truck;
+    return truckRepository.findOne(id, options);
+  }
+
+  async update(data: Types.PureTruck): Promise<any> {
+    const server: any = this.instance
+    const truckRepository: Repository<DtbTruck> = server?.db?.truck;
+    return truckRepository.save(truckRepository.create(data));
   }
 
   async findOneById(server: any, id: string | number) {
