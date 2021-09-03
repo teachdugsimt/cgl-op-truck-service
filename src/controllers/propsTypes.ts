@@ -56,6 +56,7 @@ export interface Truck extends TruckWithoutCarrierId {
 }
 
 export interface RawTruck extends TruckWithoutCarrierId {
+  document?: string[] | null
   carrierId: number
 }
 
@@ -101,6 +102,7 @@ export interface RawUpdateTruck extends UpdateTruck {
 export interface ParseUpdateTruck extends UpdateTruck {
   id: number
   carrierId?: number
+  document?: string[] | null 
 }
 
 export interface TruckFilter {

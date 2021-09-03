@@ -83,6 +83,12 @@ const modelJoinTruck = {
   quotationNumber: { type: 'number', nullable: true },
   workingZones: { type: 'array' },
   createdFrom: { type: 'number', nullable: true },
+  document: {
+    type: 'object', properties: {
+      "0": { type: 'string' },
+    }, nullable: true
+  },
+  documentStatus: { type: 'string' },
   owner: {
     type: 'object', properties: {
       id: { type: 'number', nullable: true },

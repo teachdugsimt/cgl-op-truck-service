@@ -39,6 +39,7 @@ const inputUpdateTruck = {
     stallHeight: { type: 'string', nullable: true },
     tipper: { type: 'boolean', nullable: true },
     registrationNumber: { type: 'array', items: { type: 'string' } },
+    document: { type: 'array', items: { type: 'string' }, nullable: true },
     truckPhotos: {
       type: 'object', properties: {
         front: {
@@ -129,7 +130,12 @@ export const createTruck: FastifySchema = {
     },
     require: ['authorization']
   },
-  body: inputCreateTruck,
+  body: {
+    type: 'object', properties: {
+      ...inputCreateTruck.properties,
+      document: { type: 'array', items: { type: 'string' }, nullable: true },
+    }
+  },
   response: {
     200: {
       type: 'object',
@@ -137,10 +143,10 @@ export const createTruck: FastifySchema = {
         data: {
           type: 'object', properties: {
             id: { type: 'string' },
-            ...inputCreateTruck.properties
+            document: { type: 'object', properties: { "0": { type: 'string' } } },
+            ...inputCreateTruck.properties,
           }
         },
-        // data: { type: 'array' },
       },
     }
   }
