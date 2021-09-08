@@ -22,7 +22,9 @@ const util = new Security();
         CASE
             WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
             ELSE COALESCE('[]'::json)
-        END AS work_zone
+        END AS work_zone,
+    truck.document,
+    truck.document_status
    FROM truck truck
      LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
   GROUP BY truck.id;
@@ -66,13 +68,19 @@ export class VwMyTruck {
     region: number | undefined, province?: number | undefined
   }>
 
+  @ViewColumn({ name: "document" })
+  document: object | null;
+
+  @ViewColumn({ name: "document_status" })
+  document_status: string
+
   @AfterLoad()
   parseTruckId() {
     this.id = util.encodeUserId(+this.id)
   }
 
   @AfterLoad()
-  parseQuotationNumber(){
+  parseQuotationNumber() {
     this.quotationNumber = Number(this.quotationNumber)
   }
 }

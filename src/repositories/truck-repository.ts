@@ -146,7 +146,8 @@ export default class TruckRepository {
             arr_tmp_attach_code.push(tmp[e])
           } else objectPhoto[e] = null
         }))
-        if (data.document) arr_tmp_attach_code.push(data.document)
+        if (data.document && typeof Array.isArray(data.document) &&
+        data.document.length > 0) data.document.map(e => arr_tmp_attach_code.push(e)) 
 
         console.log("Array list File attach code :: ", arr_tmp_attach_code)
         const responseConfirm = await this.confirmMedia(arr_tmp_attach_code)
@@ -243,6 +244,8 @@ export default class TruckRepository {
           data.document.length > 0 ? this.processVehicleDocument(data.document) : null,
         updatedUser: "" + userId,
       }))
+      if(data.document && typeof Array.isArray(data.document) &&
+      data.document.length > 0) this.confirmMedia(data.document)
       console.log("SaveTruck : ", saveTruck)
 
 
@@ -317,6 +320,7 @@ export default class TruckRepository {
           this.confirmMedia(pick_new_val)
           console.log("Create new list result :: ", resultCreateNew)
         }
+        
       }
 
 
