@@ -143,7 +143,10 @@ export const createTruck: FastifySchema = {
         data: {
           type: 'object', properties: {
             id: { type: 'string' },
-            document: { type: 'object', properties: { "0": { type: 'string' } }, nullable: true },
+            document: {
+              type: "object",
+              additionalProperties: { type: "string" }, nullable: true
+            },
             documentStatus: { type: 'string', nullable: true },
             carrierId: { type: 'number', nullable: true },
             registrationNumber: { type: 'array', nullable: true },
