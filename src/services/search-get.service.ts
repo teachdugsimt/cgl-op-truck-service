@@ -65,10 +65,10 @@ export default class SearchServiceGet {
 
     let arrFilter: string[] = []
 
-    if(filterTruckFinal) arrFilter.push(filterTruckFinal)
-    if(filterProvince) arrFilter.push(filterProvince) 
-    if(filterStatus) arrFilter.push(filterStatus)
-    if(filterSearchText) arrFilter.push(filterSearchText)
+    if (filterTruckFinal) arrFilter.push(filterTruckFinal)
+    if (filterProvince) arrFilter.push(filterProvince)
+    if (filterStatus) arrFilter.push(filterStatus)
+    if (filterSearchText) arrFilter.push(filterSearchText)
     console.log("arr filter :: ", arrFilter.join(" and "))
 
 
@@ -102,7 +102,7 @@ export default class SearchServiceGet {
 
 
 
-  async searchMe(server: FastifyInstance, query: TruckFilterGet, carrierId: number): Promise<any> {
+  async searchMe(server: FastifyInstance, query: TruckFilterGet, carrierId: number, includeDocs?: boolean): Promise<any> {
     console.log("Filter :: ", query)
     let { rowsPerPage, page, truckTypes: tt, workingZones: wr, descending = true, sortBy = 'id', status } = query;
     const truckTypes = tt && typeof tt == 'string' ? JSON.parse(tt) : []
@@ -160,6 +160,15 @@ export default class SearchServiceGet {
       order: {
         [`${camelToSnakeCase(sortBy)}`]: descending ? "DESC" : "ASC"
       },
+      select: includeDocs ? ["id", "approveStatus", "loadingWeight",
+        "registrationNumber", "stallHeight", "tipper",
+        "truckType", "createdAt", "updatedAt",
+        "quotationNumber", "workingZones", "document", "document_status"] : [
+        "id", "approveStatus", "loadingWeight",
+        "registrationNumber", "stallHeight", "tipper",
+        "truckType", "createdAt", "updatedAt",
+        "quotationNumber", "workingZones",
+      ]
     };
 
     const repo = new TruckRepository()

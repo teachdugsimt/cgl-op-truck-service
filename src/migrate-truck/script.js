@@ -3,6 +3,7 @@ const sql = require('sql');
 const jwt = require('jsonwebtoken')
 const axios = require('axios')
 const Hashids = require('hashids');
+const _ = require('lodash');
 // const Utility = require('utility-layer/dist/security');
 // const util = new Utility();
 
@@ -37,6 +38,14 @@ const newConnection = {
   password: newPassword,
   database: newDB,
   port: newPort,
+}
+
+const productionConnection = {
+  host: "cgl-db.cs7ingowcayi.ap-southeast-1.rds.amazonaws.com",
+  user: "postgres",
+  password: "FaOpNg13iRDxxHWR8iOmV=Mx-YHzGI",
+  database: "truck_service",
+  port: 5432,
 }
 
 
@@ -372,7 +381,9 @@ const createView = async () => {
       CASE
           WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
           ELSE COALESCE('[]'::json)
-      END AS work_zone
+      END AS work_zone,
+  truck.document,
+  truck.document_status
  FROM truck truck
    LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
 GROUP BY truck.id;`
@@ -408,7 +419,9 @@ truck.carrier_id,
     CASE
         WHEN (array_agg(wr.region))[1] IS NOT NULL THEN json_agg(json_build_object('region', wr.region, 'province', wr.province))
         ELSE COALESCE('[]'::json)
-    END AS work_zone
+    END AS work_zone,
+   truck.document,
+   truck.document_status
 FROM truck truck
  LEFT JOIN truck_working_zone wr ON wr.truck_id = truck.id
  LEFT JOIN dblink('bookingservice'::text, 'SELECT id,truck_id,avatar,fullname,bookingdatetime,status FROM vw_job_booking_truck_list'::text) bookv(id integer, truck_id integer, avatar json, fullname text, bookingdatetime text, status text) ON bookv.truck_id = truck.id AND bookv.status = 'WAITING'::text
@@ -683,25 +696,50 @@ const migrationImage = async () => {
 
 
 
+const cleanDuplicateTruckByRegistration = async () => {
+  const clientTruckService = new Pool(productionConnection)
+  const newTruckConnection = await clientTruckService.connect();
+
+  const { rows: RowTruck } = await newTruckConnection.query(`SELECT * FROM truck;`);
+  const { rows: RowTruckClone } = await newTruckConnection.query(`SELECT * FROM truck_clone;`);
+
+  const uniqTruckClone = _.uniqBy(RowTruckClone, 'registration_number')
+  // console.log("Arr Uniq Truck Clonde :: ", uniqTruckClone)
+
+  const uniqTruckCloneDiffTruck = _.differenceBy(RowTruck, uniqTruckClone, 'id');
+
+  for (const attr of RowTruckClone) {
+    let findId = uniqTruckCloneDiffTruck.find(e => e.id == attr.id)
+    if (findId) {
+      await newTruckConnection.query(`DELETE FROM truck WHERE id = ${findId.id};`);
+    }
+  }
+
+  console.log("Finish cleanDuplicateTruckByRegistration !")
+  return true;
+}
+
+
 
 
 const main = async () => {
   try {
-    await createExtendsion()
-    await createTable()
-    await addDocumentColumnToTruck()
+    // await createExtendsion()
+    // await createTable()
+    // await addDocumentColumnToTruck()
 
-    await createView()
+    // await createView()
 
-    await runTruck()
-    await runTruckWorkingZone()
-    await runTruckPhoto()
-    await runTruckFavorite()
-    await updateCarrierIdGroupNewUser()
-    await mapNewTruckType()
-    await updateSequenceAllTable()
+    // await runTruck()
+    // await runTruckWorkingZone()
+    // await runTruckPhoto()
+    // await runTruckFavorite()
+    // await updateCarrierIdGroupNewUser()
+    // await mapNewTruckType()
+    // await updateSequenceAllTable()
 
-    await parseRegistrationNumber()
+    // await parseRegistrationNumber()
+    await cleanDuplicateTruckByRegistration()
     return true
   } catch (error) {
     throw error

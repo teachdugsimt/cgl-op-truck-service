@@ -12,7 +12,7 @@ import {
 } from './truck.schema';
 import {
   searchGetSchema, createTruck, updateTruck, getMySchema, getAllMeSchema,
-  getMyTruckSummary, getAllMeWithoutAuthorizeSchema
+  getMyTruckSummary, getAllMeWithoutAuthorizeSchema, getListTruckByCarrierIdSchema
 } from './search.schema';
 import { RawUpdateTruck, Truck, TruckListResponse, TruckFilterGet } from './propsTypes'
 import TruckDynamodbRepository, { UploadLink } from '../repositories/upload-link.repository'
@@ -180,6 +180,23 @@ export default class TruckController {
       const response = await this.searchServiceGet?.searchMe(TruckController.instance, req.query, userId)
       return { ...response }
     } catch (err: any) {
+      console.log("Raw Erorr Controller : ", err)
+      return err
+    }
+  }
+
+  @GET({
+    url: '/carrier/:userId',
+    options: {
+      schema: getListTruckByCarrierIdSchema
+    },
+  })
+  async getListTruckByCarrierId(req: FastifyRequest<{ Params: { userId: string }, Querystring: TruckFilterGet, Headers: { authorization: string }, }>, reply: FastifyReply): Promise<any> {
+    try {
+      const userId = util.decodeUserId(req.params.userId)
+      const response = await this.searchServiceGet?.searchMe(TruckController.instance, req.query, userId, true)
+      return { ...response }
+    } catch (err) {
       console.log("Raw Erorr Controller : ", err)
       return err
     }

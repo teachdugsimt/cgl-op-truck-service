@@ -39,6 +39,7 @@ const inputUpdateTruck = {
     stallHeight: { type: 'string', nullable: true },
     tipper: { type: 'boolean', nullable: true },
     registrationNumber: { type: 'array', items: { type: 'string' } },
+    document: { type: 'array', items: { type: 'string' }, nullable: true },
     truckPhotos: {
       type: 'object', properties: {
         front: {
@@ -129,7 +130,12 @@ export const createTruck: FastifySchema = {
     },
     require: ['authorization']
   },
-  body: inputCreateTruck,
+  body: {
+    type: 'object', properties: {
+      ...inputCreateTruck.properties,
+      document: { type: 'array', items: { type: 'string' }, nullable: true },
+    }
+  },
   response: {
     200: {
       type: 'object',
@@ -137,10 +143,21 @@ export const createTruck: FastifySchema = {
         data: {
           type: 'object', properties: {
             id: { type: 'string' },
-            ...inputCreateTruck.properties
+            document: {
+              type: "object",
+              additionalProperties: { type: "string" }, nullable: true
+            },
+            documentStatus: { type: 'string', nullable: true },
+            carrierId: { type: 'number', nullable: true },
+            registrationNumber: { type: 'array', nullable: true },
+            loadingWeight: { type: 'number', nullable: true },
+            truckType: { type: 'number' },
+            isTipper: { type: 'boolean' },
+            stallHeight: { type: 'string' },
+            approveStatus: { type: 'string' },
+            workingZones: { type: 'array', nullable: true }
           }
         },
-        // data: { type: 'array' },
       },
     }
   }
@@ -172,6 +189,41 @@ export const getMySchema: FastifySchema = {
     },
     require: ['authorization']
   },
+  querystring: {
+    type: 'object',
+    properties: {
+      descending: { type: 'boolean', nullable: true },
+      page: { type: 'number', nullable: true },
+      rowsPerPage: { type: 'number', nullable: true },
+      sortBy: { type: 'string', nullable: true },
+      truckTypes: { type: 'string', nullable: true },
+      status: { type: 'number', nullable: true },
+      workingZones: { type: 'string', nullable: true },
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        data: { type: 'array' },
+        totalElements: { type: 'number' },
+        size: { type: 'number' },
+        numberOfElements: { type: 'number' },
+        currentPage: { type: 'number' },
+        totalPages: { type: 'number' },
+      },
+    }
+  }
+}
+export const getListTruckByCarrierIdSchema: FastifySchema = {
+  headers: {
+    type: 'object',
+    properties: {
+      authorization: { type: 'string' }
+    },
+    require: ['authorization']
+  },
+  params: { userId: { type: 'string' } },
   querystring: {
     type: 'object',
     properties: {
