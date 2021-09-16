@@ -155,7 +155,7 @@ export default class TruckController {
       const response = await this.searchServiceGet?.search(TruckController.instance, req.query)
       return { ...response }
 
-    } catch (err) {
+    } catch (err: any) {
       console.log("Raw Erorr Controller : ", err)
       return err
     }
@@ -179,7 +179,7 @@ export default class TruckController {
 
       const response = await this.searchServiceGet?.searchMe(TruckController.instance, req.query, userId)
       return { ...response }
-    } catch (err) {
+    } catch (err: any) {
       console.log("Raw Erorr Controller : ", err)
       return err
     }
@@ -333,7 +333,7 @@ export default class TruckController {
           return { url: link, truckId: req.params.truckId }
         else return { url: null, truckId: req.params.truckId }
       }
-    } catch (err) {
+    } catch (err: any) {
       throw new Error(err)
     }
   }
@@ -355,7 +355,7 @@ export default class TruckController {
           return { data: true }
         else return { data: false }
       }
-    } catch (err) {
+    } catch (err: any) {
       throw new Error(err)
     }
   }
@@ -400,9 +400,9 @@ export default class TruckController {
         } else {
           reply.status(400).send({ message: "Invalid url entry" })
         }
-      } 
-      else reply.status(400).send({message: "Invalid truckId"})
-    } catch (err) {
+      }
+      else reply.status(400).send({ message: "Invalid truckId" })
+    } catch (err: any) {
       throw new Error(err)
     }
   }
