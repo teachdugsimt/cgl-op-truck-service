@@ -710,6 +710,7 @@ const cleanDuplicateTruckByRegistration = async () => {
 
   for (const attr of RowTruckClone) {
     let findId = uniqTruckCloneDiffTruck.find(e => e.id == attr.id)
+    console.log("Find ID :: ", findId)
     if (findId) {
       await newTruckConnection.query(`DELETE FROM truck WHERE id = ${findId.id};`);
     }
@@ -719,6 +720,42 @@ const cleanDuplicateTruckByRegistration = async () => {
   return true;
 }
 
+
+const clearDuplicateRegistrationAdvance = async () => {
+  const clientTruckService = new Pool(productionConnection)
+  const newTruckConnection = await clientTruckService.connect();
+
+  const { rows: RowTruck } = await newTruckConnection.query(`SELECT * FROM truck;`);
+  const { rows: RowTruckClone } = await newTruckConnection.query(`SELECT * FROM truck_clone;`);
+
+  
+
+  let clone = RowTruckClone.map(attr => {
+    const splitterRegistration = attr.registration_number.split(",")
+    const parseRegistration = splitterRegistration.map(e => e.toString().replace(/\D/g, ""))
+    return { ...attr, registration_number: parseRegistration }
+  })
+  let real = RowTruck.map((element, elindex) => {
+    const splitterRegistration = element.registration_number.split(",")
+    const parseRegistration = splitterRegistration.map(e => e.toString().replace(/\D/g, ""))
+    return { ...element, registration_number: parseRegistration }
+  })
+
+
+  const uniqTruckClone = _.uniqBy(clone, 'registration_number[0]')
+  // console.log("Uniq Truck clone : ", uniqTruckClone)
+  const uniqTruckCloneDiffTruck = _.differenceBy(real, uniqTruckClone, 'id');
+  console.log("Diff clone vs real : ", uniqTruckCloneDiffTruck.length)
+
+  // let findId = uniqTruckCloneDiffTruck.find(e => e.id == attr.id)
+  // if (findId) {
+  //   console.log("Find ID :: ", findId)
+  //   // await newTruckConnection.query(`DELETE FROM truck WHERE id = ${findId.id};`);
+  // }
+
+  console.log("Finish cleanDuplicateTruckByRegistration !")
+  return true;
+}
 
 
 
@@ -739,7 +776,7 @@ const main = async () => {
     // await updateSequenceAllTable()
 
     // await parseRegistrationNumber()
-    await cleanDuplicateTruckByRegistration()
+    await clearDuplicateRegistrationAdvance()
     return true
   } catch (error) {
     throw error

@@ -194,11 +194,19 @@ export default class TruckController {
   async getListTruckByCarrierId(req: FastifyRequest<{ Params: { userId: string }, Querystring: TruckFilterGet, Headers: { authorization: string }, }>, reply: FastifyReply): Promise<any> {
     try {
       const userId = util.decodeUserId(req.params.userId)
-      const response = await this.searchServiceGet?.searchMe(TruckController.instance, req.query, userId, true)
-      return { ...response }
-    } catch (err) {
+      console.log("User ID don't encode : ", userId)
+      if (userId) {
+        const response = await this.searchServiceGet?.searchMe(TruckController.instance, req.query, userId, true)
+        return { ...response }
+      } else {
+        reply.status(400).send({ message: "bad request" })
+      }
+    } catch (err: any) {
       console.log("Raw Erorr Controller : ", err)
-      return err
+      if (err.message.includes(`is invalid, as it contains characters that do not exist in the alphabet`)) {
+        reply.status(400).send({ message: "bad request" })
+      } else
+        return err
     }
   }
 
