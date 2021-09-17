@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 const axios = require('axios')
 const Hashids = require('hashids');
 const _ = require('lodash');
+const { EEXIST } = require('constants');
 // const Utility = require('utility-layer/dist/security');
 // const util = new Utility();
 
@@ -728,7 +729,7 @@ const clearDuplicateRegistrationAdvance = async () => {
   const { rows: RowTruck } = await newTruckConnection.query(`SELECT * FROM truck;`);
   const { rows: RowTruckClone } = await newTruckConnection.query(`SELECT * FROM truck_clone;`);
 
-  
+
 
   let clone = RowTruckClone.map(attr => {
     const splitterRegistration = attr.registration_number.split(",")
@@ -759,6 +760,707 @@ const clearDuplicateRegistrationAdvance = async () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+const updateWorkingZone = async () => {
+  const provinceListOld = [
+    { "label": "กรุงเทพมหานคร", "value": 1, region: 1 },
+    { "label": "สมุทรปราการ", "value": 57, region: 4 },
+    { "label": "นนทบุรี", "value": 36, region: 1 },
+    { "label": "ปทุมธานี", "value": 37, region: 1 },
+    { "label": "พระนครศรีอยุธยา", "value": 46, region: 1 },
+    { "label": "อ่างทอง", "value": 3, region: 1 },
+    { "label": "ลพบุรี", "value": 22, region: 1 },
+    { "label": "สิงห์บุรี", "value": 62, region: 1 },
+    { "label": "ชัยนาท", "value": 7, region: 1 },
+    { "label": "สระบุรี", "value": 60, region: 1 },
+    { "label": "นครนายก", "value": 26, region: 1 },
+    { "label": "ชลบุรี", "value": 12, region: 4 },
+    { "label": "ระยอง", "value": 53, region: 4 },
+    { "label": "จันทบุรี", "value": 9, region: 4 },
+    { "label": "ตราด", "value": 71, region: 4 },
+    { "label": "ฉะเชิงเทรา", "value": 6, region: 4 },
+    { "label": "ปราจีนบุรี", "value": 49, region: 4 },
+    { "label": "สระแก้ว", "value": 55, region: 4 },
+    { "label": "นครราชสีมา", "value": 29, region: 6 },
+    { "label": "บุรีรัมย์", "value": 5, region: 6 },
+    { "label": "สุรินทร์", "value": 68, region: 6 },
+    { "label": "ศรีสะเกษ", "value": 63, region: 6 },
+    { "label": "อุบลราชธานี", "value": 72, region: 6 },
+    { "label": "ยโสธร", "value": 77, region: 6 },
+    { "label": "ชัยภูมิ", "value": 8, region: 6 },
+    { "label": "อำนาจเจริญ", "value": 2, region: 6 },
+    { "label": "บึงกาฬ", "value": 4, region: 6 },
+    { "label": "หนองบัวลำภู", "value": 34, region: 6 },
+    { "label": "ขอนแก่น", "value": 17, region: 6 },
+    { "label": "อุดรธานี", "value": 73, region: 6 },
+    { "label": "เลย", "value": 21, region: 6 },
+    { "label": "หนองคาย", "value": 35, region: 6 },
+    { "label": "มหาสารคาม", "value": 24, region: 6 },
+    { "label": "ร้อยเอ็ด", "value": 54, region: 6 },
+    { "label": "กาฬสินธุ์", "value": 14, region: 6 },
+    { "label": "สกลนคร", "value": 56, region: 6 },
+    { "label": "นครพนม", "value": 28, region: 6 },
+    { "label": "มุกดาหาร", "value": 25, region: 6 },
+    { "label": "เชียงใหม่", "value": 10, region: 2 },
+    { "label": "ลำพูน", "value": 20, region: 2 },
+    { "label": "ลำปาง", "value": 19, region: 2 },
+    { "label": "อุตรดิตถ์", "value": 75, region: 2 },
+    { "label": "แพร่", "value": 47, region: 2 },
+    { "label": "น่าน", "value": 32, region: 2 },
+    { "label": "พะเยา", "value": 41, region: 2 },
+    { "label": "เชียงราย", "value": 11, region: 2 },
+    { "label": "แม่ฮ่องสอน", "value": 23, region: 2 },
+    { "label": "นครสวรรค์", "value": 30, region: 1 },
+    { "label": "อุทัยธานี", "value": 74, region: 1 },
+    { "label": "กำแพงเพชร", "value": 15, region: 1 },
+    { "label": "ตาก", "value": 69, region: 5 },
+    { "label": "สุโขทัย", "value": 65, region: 1 },
+    { "label": "พิษณุโลก", "value": 45, region: 1 },
+    { "label": "พิจิตร", "value": 44, region: 1 },
+    { "label": "เพชรบูรณ์", "value": 42, region: 1 },
+    { "label": "ราชบุรี", "value": 52, region: 5 },
+    { "label": "กาญจนบุรี", "value": 16, region: 5 },
+    { "label": "สุพรรณบุรี", "value": 66, region: 1 },
+    { "label": "นครปฐม", "value": 27, region: 1 },
+    { "label": "สมุทรสาคร", "value": 58, region: 1 },
+    { "label": "สมุทรสงคราม", "value": 59, region: 1 },
+    { "label": "เพชรบุรี", "value": 43, region: 5 },
+    { "label": "ประจวบคีรีขันธ์", "value": 50, region: 5 },
+    { "label": "นครศรีธรรมราช", "value": 31, region: 3 },
+    { "label": "กระบี่", "value": 18, region: 3 },
+    { "label": "พังงา", "value": 39, region: 3 },
+    { "label": "ภูเก็ต", "value": 48, region: 3 },
+    { "label": "สุราษฎร์ธานี", "value": 67, region: 3 },
+    { "label": "ระนอง", "value": 51, region: 3 },
+    { "label": "ชุมพร", "value": 13, region: 3 },
+    { "label": "สงขลา", "value": 64, region: 3 },
+    { "label": "สตูล", "value": 61, region: 3 },
+    { "label": "ตรัง", "value": 70, region: 3 },
+    { "label": "พัทลุง", "value": 40, region: 3 },
+    { "label": "ปัตตานี", "value": 38, region: 3 },
+    { "label": "ยะลา", "value": 76, region: 3 },
+    { "label": "นราธิวาส", "value": 33, region: 3 },
+  ]
+  const provinceListNew = [
+    {
+      "id": 1,
+      "code": 10,
+      "name_in_thai": "กรุงเทพมหานคร",
+      "name_in_english": "Bangkok",
+      "zone_id": 1
+    },
+    {
+      "id": 2,
+      "code": 11,
+      "name_in_thai": "สมุทรปราการ",
+      "name_in_english": "Samut Prakarn",
+      "zone_id": 1
+    },
+    {
+      "id": 3,
+      "code": 12,
+      "name_in_thai": "นนทบุรี",
+      "name_in_english": "Nonthaburi",
+      "zone_id": 1
+    },
+    {
+      "id": 4,
+      "code": 13,
+      "name_in_thai": "ปทุมธานี",
+      "name_in_english": "Pathum Thani",
+      "zone_id": 1
+    },
+    {
+      "id": 5,
+      "code": 14,
+      "name_in_thai": "พระนครศรีอยุธยา",
+      "name_in_english": "Phra Nakhon Si Ayutthaya",
+      "zone_id": 1
+    },
+    {
+      "id": 6,
+      "code": 15,
+      "name_in_thai": "อ่างทอง",
+      "name_in_english": "Ang Thong",
+      "zone_id": 1
+    },
+    {
+      "id": 7,
+      "code": 16,
+      "name_in_thai": "ลพบุรี",
+      "name_in_english": "Lop Buri",
+      "zone_id": 1
+    },
+    {
+      "id": 8,
+      "code": 17,
+      "name_in_thai": "สิงห์บุรี",
+      "name_in_english": "Sing Buri",
+      "zone_id": 1
+    },
+    {
+      "id": 9,
+      "code": 18,
+      "name_in_thai": "ชัยนาท",
+      "name_in_english": "Chai Nat",
+      "zone_id": 1
+    },
+    {
+      "id": 10,
+      "code": 19,
+      "name_in_thai": "สระบุรี",
+      "name_in_english": "Saraburi",
+      "zone_id": 1
+    },
+    {
+      "id": 11,
+      "code": 20,
+      "name_in_thai": "ชลบุรี",
+      "name_in_english": "Chon Buri",
+      "zone_id": 4
+    },
+    {
+      "id": 12,
+      "code": 21,
+      "name_in_thai": "ระยอง",
+      "name_in_english": "Rayong",
+      "zone_id": 4
+    },
+    {
+      "id": 13,
+      "code": 22,
+      "name_in_thai": "จันทบุรี",
+      "name_in_english": "Chanthaburi",
+      "zone_id": 4
+    },
+    {
+      "id": 14,
+      "code": 23,
+      "name_in_thai": "ตราด",
+      "name_in_english": "Trat",
+      "zone_id": 4
+    },
+    {
+      "id": 15,
+      "code": 24,
+      "name_in_thai": "ฉะเชิงเทรา",
+      "name_in_english": "Chachoengsao",
+      "zone_id": 4
+    },
+    {
+      "id": 16,
+      "code": 25,
+      "name_in_thai": "ปราจีนบุรี",
+      "name_in_english": "Prachin Buri",
+      "zone_id": 4
+    },
+    {
+      "id": 17,
+      "code": 26,
+      "name_in_thai": "นครนายก",
+      "name_in_english": "Nakhon Nayok",
+      "zone_id": 1
+    },
+    {
+      "id": 18,
+      "code": 27,
+      "name_in_thai": "สระแก้ว",
+      "name_in_english": "Sa kaeo",
+      "zone_id": 4
+    },
+    {
+      "id": 19,
+      "code": 30,
+      "name_in_thai": "นครราชสีมา",
+      "name_in_english": "Nakhon Ratchasima",
+      "zone_id": 3
+    },
+    {
+      "id": 20,
+      "code": 31,
+      "name_in_thai": "บุรีรัมย์",
+      "name_in_english": "Buri Ram",
+      "zone_id": 6
+    },
+    {
+      "id": 21,
+      "code": 32,
+      "name_in_thai": "สุรินทร์",
+      "name_in_english": "Surin",
+      "zone_id": 6
+    },
+    {
+      "id": 22,
+      "code": 33,
+      "name_in_thai": "ศรีสะเกษ",
+      "name_in_english": "Si Sa Ket",
+      "zone_id": 6
+    },
+    {
+      "id": 23,
+      "code": 34,
+      "name_in_thai": "อุบลราชธานี",
+      "name_in_english": "Ubon Ratchathani",
+      "zone_id": 1
+    },
+    {
+      "id": 24,
+      "code": 35,
+      "name_in_thai": "ยโสธร",
+      "name_in_english": "Yasothon",
+      "zone_id": 6
+    },
+    {
+      "id": 25,
+      "code": 36,
+      "name_in_thai": "ชัยภูมิ",
+      "name_in_english": "Chaiyaphum",
+      "zone_id": 6
+    },
+    {
+      "id": 26,
+      "code": 37,
+      "name_in_thai": "อำนาจเจริญ",
+      "name_in_english": "Amnat Charoen",
+      "zone_id": 6
+    },
+    {
+      "id": 27,
+      "code": 38,
+      "name_in_thai": "บึงกาฬ",
+      "name_in_english": "Bueng Kan",
+      "zone_id": 6
+    },
+    {
+      "id": 28,
+      "code": 39,
+      "name_in_thai": "หนองบัวลำภู",
+      "name_in_english": "Nong Bua Lam Phu",
+      "zone_id": 6
+    },
+    {
+      "id": 29,
+      "code": 40,
+      "name_in_thai": "ขอนแก่น",
+      "name_in_english": "Khon Kaen",
+      "zone_id": 6
+    },
+    {
+      "id": 30,
+      "code": 41,
+      "name_in_thai": "อุดรธานี",
+      "name_in_english": "Udon Thani",
+      "zone_id": 6
+    },
+    {
+      "id": 31,
+      "code": 42,
+      "name_in_thai": "เลย",
+      "name_in_english": "Loei",
+      "zone_id": 6
+    },
+    {
+      "id": 32,
+      "code": 43,
+      "name_in_thai": "หนองคาย",
+      "name_in_english": "Nong Khai",
+      "zone_id": 6
+    },
+    {
+      "id": 33,
+      "code": 44,
+      "name_in_thai": "มหาสารคาม",
+      "name_in_english": "Maha Sarakham",
+      "zone_id": 6
+    },
+    {
+      "id": 34,
+      "code": 45,
+      "name_in_thai": "ร้อยเอ็ด",
+      "name_in_english": "Roi Et",
+      "zone_id": 6
+    },
+    {
+      "id": 35,
+      "code": 46,
+      "name_in_thai": "กาฬสินธุ์",
+      "name_in_english": "Kalasin",
+      "zone_id": 6
+    },
+    {
+      "id": 36,
+      "code": 47,
+      "name_in_thai": "สกลนคร",
+      "name_in_english": "Sakon Nakhon",
+      "zone_id": 6
+    },
+    {
+      "id": 37,
+      "code": 48,
+      "name_in_thai": "นครพนม",
+      "name_in_english": "Nakhon Phanom",
+      "zone_id": 6
+    },
+    {
+      "id": 38,
+      "code": 49,
+      "name_in_thai": "มุกดาหาร",
+      "name_in_english": "Mukdahan",
+      "zone_id": 6
+    },
+    {
+      "id": 39,
+      "code": 50,
+      "name_in_thai": "เชียงใหม่",
+      "name_in_english": "Chiang Mai",
+      "zone_id": 2
+    },
+    {
+      "id": 40,
+      "code": 51,
+      "name_in_thai": "ลำพูน",
+      "name_in_english": "Lamphun",
+      "zone_id": 2
+    },
+    {
+      "id": 41,
+      "code": 52,
+      "name_in_thai": "ลำปาง",
+      "name_in_english": "Lampang",
+      "zone_id": 2
+    },
+    {
+      "id": 42,
+      "code": 53,
+      "name_in_thai": "อุตรดิตถ์",
+      "name_in_english": "Uttaradit",
+      "zone_id": 2
+    },
+    {
+      "id": 43,
+      "code": 54,
+      "name_in_thai": "แพร่",
+      "name_in_english": "Phrae",
+      "zone_id": 2
+    },
+    {
+      "id": 44,
+      "code": 55,
+      "name_in_thai": "น่าน",
+      "name_in_english": "Nan",
+      "zone_id": 2
+    },
+    {
+      "id": 45,
+      "code": 56,
+      "name_in_thai": "พะเยา",
+      "name_in_english": "Phayao",
+      "zone_id": 2
+    },
+    {
+      "id": 46,
+      "code": 57,
+      "name_in_thai": "เชียงราย",
+      "name_in_english": "Chiang Rai",
+      "zone_id": 2
+    },
+    {
+      "id": 47,
+      "code": 58,
+      "name_in_thai": "แม่ฮ่องสอน",
+      "name_in_english": "Mae Hong Son",
+      "zone_id": 2
+    },
+    {
+      "id": 48,
+      "code": 60,
+      "name_in_thai": "นครสวรรค์",
+      "name_in_english": "Nakhon Sawan",
+      "zone_id": 2
+    },
+    {
+      "id": 49,
+      "code": 61,
+      "name_in_thai": "อุทัยธานี",
+      "name_in_english": "Uthai Thani",
+      "zone_id": 2
+    },
+    {
+      "id": 50,
+      "code": 62,
+      "name_in_thai": "กำแพงเพชร",
+      "name_in_english": "Kamphaeng Phet",
+      "zone_id": 2
+    },
+    {
+      "id": 51,
+      "code": 63,
+      "name_in_thai": "ตาก",
+      "name_in_english": "Tak",
+      "zone_id": 2
+    },
+    {
+      "id": 52,
+      "code": 64,
+      "name_in_thai": "สุโขทัย",
+      "name_in_english": "Sukhothai",
+      "zone_id": 2
+    },
+    {
+      "id": 53,
+      "code": 65,
+      "name_in_thai": "พิษณุโลก",
+      "name_in_english": "Phitsanulok",
+      "zone_id": 2
+    },
+    {
+      "id": 54,
+      "code": 66,
+      "name_in_thai": "พิจิตร",
+      "name_in_english": "Phichit",
+      "zone_id": 2
+    },
+    {
+      "id": 55,
+      "code": 67,
+      "name_in_thai": "เพชรบูรณ์",
+      "name_in_english": "Phetchabun",
+      "zone_id": 2
+    },
+    {
+      "id": 56,
+      "code": 70,
+      "name_in_thai": "ราชบุรี",
+      "name_in_english": "Ratchaburi",
+      "zone_id": 1
+    },
+    {
+      "id": 57,
+      "code": 71,
+      "name_in_thai": "กาญจนบุรี",
+      "name_in_english": "Kanchanaburi",
+      "zone_id": 1
+    },
+    {
+      "id": 58,
+      "code": 72,
+      "name_in_thai": "สุพรรณบุรี",
+      "name_in_english": "Suphan Buri",
+      "zone_id": 1
+    },
+    {
+      "id": 59,
+      "code": 73,
+      "name_in_thai": "นครปฐม",
+      "name_in_english": "Nakhon Pathom",
+      "zone_id": 1
+    },
+    {
+      "id": 60,
+      "code": 74,
+      "name_in_thai": "สมุทรสาคร",
+      "name_in_english": "Samut Sakhon",
+      "zone_id": 1
+    },
+    {
+      "id": 61,
+      "code": 75,
+      "name_in_thai": "สมุทรสงคราม",
+      "name_in_english": "Samut Songkhram",
+      "zone_id": 1
+    },
+    {
+      "id": 62,
+      "code": 76,
+      "name_in_thai": "เพชรบุรี",
+      "name_in_english": "Phetchaburi",
+      "zone_id": 1
+    },
+    {
+      "id": 63,
+      "code": 77,
+      "name_in_thai": "ประจวบคีรีขันธ์",
+      "name_in_english": "Prachuap Khiri Khan",
+      "zone_id": 1
+    },
+    {
+      "id": 64,
+      "code": 80,
+      "name_in_thai": "นครศรีธรรมราช",
+      "name_in_english": "Nakhon Si Thammarat",
+      "zone_id": 6
+    },
+    {
+      "id": 65,
+      "code": 81,
+      "name_in_thai": "กระบี่",
+      "name_in_english": "Krabi",
+      "zone_id": 3
+    },
+    {
+      "id": 66,
+      "code": 82,
+      "name_in_thai": "พังงา",
+      "name_in_english": "Phang-nga",
+      "zone_id": 3
+    },
+    {
+      "id": 67,
+      "code": 83,
+      "name_in_thai": "ภูเก็ต",
+      "name_in_english": "Phuket",
+      "zone_id": 3
+    },
+    {
+      "id": 68,
+      "code": 84,
+      "name_in_thai": "สุราษฎร์ธานี",
+      "name_in_english": "Surat Thani",
+      "zone_id": 3
+    },
+    {
+      "id": 69,
+      "code": 85,
+      "name_in_thai": "ระนอง",
+      "name_in_english": "Ranong",
+      "zone_id": 3
+    },
+    {
+      "id": 70,
+      "code": 86,
+      "name_in_thai": "ชุมพร",
+      "name_in_english": "Chumphon",
+      "zone_id": 3
+    },
+    {
+      "id": 71,
+      "code": 90,
+      "name_in_thai": "สงขลา",
+      "name_in_english": "Songkhla",
+      "zone_id": 3
+    },
+    {
+      "id": 72,
+      "code": 91,
+      "name_in_thai": "สตูล",
+      "name_in_english": "Satun",
+      "zone_id": 3
+    },
+    {
+      "id": 73,
+      "code": 92,
+      "name_in_thai": "ตรัง",
+      "name_in_english": "Trang",
+      "zone_id": 3
+    },
+    {
+      "id": 74,
+      "code": 93,
+      "name_in_thai": "พัทลุง",
+      "name_in_english": "Phatthalung",
+      "zone_id": 3
+    },
+    {
+      "id": 75,
+      "code": 94,
+      "name_in_thai": "ปัตตานี",
+      "name_in_english": "Pattani",
+      "zone_id": 3
+    },
+    {
+      "id": 76,
+      "code": 95,
+      "name_in_thai": "ยะลา",
+      "name_in_english": "Yala",
+      "zone_id": 3
+    },
+    {
+      "id": 77,
+      "code": 96,
+      "name_in_thai": "นราธิวาส",
+      "name_in_english": "Narathiwat",
+      "zone_id": 3
+    }
+  ]
+
+  let mixArr = provinceListOld.map(e => {
+    let slot = provinceListNew.find(item => e.label == item.name_in_thai)
+    return {
+      oldProvince: e.value,
+      oldRegion: e.region,
+      newProvince: slot.id,
+      newRegion: slot.zone_id,
+    }
+  })
+
+  // console.log("Mix array : ", mixArr)
+
+  const devConnection = {
+    host: "cgl-dev-db.ccyrpfjhgi1v.ap-southeast-1.rds.amazonaws.com",
+    user: "postgres",
+    password: ".9^Piv-.KlzZhZm.MU7vXZU7yE9I-4",
+    database: 'truck_service',
+    port: 5432,
+  }
+  const stgConnection = {
+    host: "7uZrE546PzCjEV^e^tKpvs43PJTnHN",
+    user: "postgres",
+    password: "cgl-db.cj4ycxviwust.ap-southeast-1.rds.amazonaws.com",
+    database: 'truck_service',
+    port: 5432,
+  }
+  const prodConnection = {
+    host: "cgl-db.cs7ingowcayi.ap-southeast-1.rds.amazonaws.com",
+    user: "postgres",
+    password: "FaOpNg13iRDxxHWR8iOmV=Mx-YHzGI",
+    database: 'truck_service',
+    port: 5432,
+  }
+  const clientTruckService = new Pool(prodConnection)
+  const newTruckConnection = await clientTruckService.connect();
+
+  const { rows: RowTruckWr } = await newTruckConnection.query(`SELECT * FROM truck_working_zone;`);
+
+  for (const attr of RowTruckWr) {
+    if (attr.region != 7) {
+
+      const valObject = mixArr.find(e => e.oldRegion == attr.region && e.oldProvince == attr.province)
+      console.log("Val object :: ", valObject)
+
+      if (valObject) await newTruckConnection.query(`UPDATE truck_working_zone
+      SET region = '${valObject.newRegion}' , province = '${valObject.newProvince}'
+      WHERE id = '${attr.id}' and region = '${valObject.oldRegion}' and province = '${valObject.oldProvince}'`);
+      else {
+        if (attr.region >= 1 && attr.region < 78 && attr.province < 7) {
+          const newZoneObject = provinceListNew.find(item => item.id == attr.region)
+          if (newZoneObject)
+            await newTruckConnection.query(`UPDATE truck_working_zone
+          SET region = '${newZoneObject.zone_id}' , province = '${newZoneObject.id}'
+          WHERE id = '${attr.id}' and region = '${attr.region}' and province = '${attr.province}'`);
+          else {"Attr don't match 0 : ", attr}
+        } else console.log("Attr don't match 1 : ", attr)
+      }
+    }
+  }
+
+  console.log('Finished update registration');
+  return true;
+
+}
+
+
 const main = async () => {
   try {
     // await createExtendsion()
@@ -775,8 +1477,10 @@ const main = async () => {
     // await mapNewTruckType()
     // await updateSequenceAllTable()
 
+    //  ** CLEAN, CLEAR ... SCRIPT **
     // await parseRegistrationNumber()
-    await clearDuplicateRegistrationAdvance()
+    // await clearDuplicateRegistrationAdvance()
+    // await updateWorkingZone()
     return true
   } catch (error) {
     throw error
