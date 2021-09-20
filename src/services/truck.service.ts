@@ -3,10 +3,50 @@ import TruckRepository from '../repositories/truck-repository'
 import { FastifyInstance } from 'fastify';
 import { RawTruck, ParseUpdateTruck } from '../controllers/propsTypes'
 import _ from 'lodash'
+
+
+const deleteDocument = (document, docId) => {
+  let tmpData = document
+
+  Object.keys(document).map((e) => {
+    if (document[e] == docId) {
+      delete document[e]
+    }
+  })
+
+  let newDocument = {}
+  let minusIndex = false
+  Object.keys(document).map((e, i) => {
+    if (Number(e) != i) {
+      minusIndex = true
+    }
+    if (minusIndex) {
+      newDocument[(i).toString()] = tmpData[(i + 1).toString()] ? tmpData[(i + 1).toString()] : null
+    } else {
+      newDocument[e] = tmpData[e]
+    }
+  })
+  return newDocument
+}
 @Service()
 export default class TruckService {
   @Initializer()
   async init(): Promise<void> {
+  }
+
+  async deleteDocumentById(truckId: number, docId: string): Promise<any> {
+    const repo = new TruckRepository()
+    const data = await repo.findOne(truckId)
+
+    if (data && data.document && typeof data.document == 'object') {
+      let newDocument = deleteDocument(data.document, docId)
+      console.log("New document affter delete : ", newDocument)
+      data.document = typeof newDocument == 'object' && Object.keys(newDocument).length > 0 ? newDocument : null
+      await repo.update(data)
+      return { message: true }
+    } else {
+      return { message: false }
+    }
   }
 
   async findMyTruckWithId(server: FastifyInstance, id: string): Promise<any> {

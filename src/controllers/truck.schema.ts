@@ -259,6 +259,29 @@ export const deleteUploadLinkResponse: FastifySchema = {
   }
 }
 
+
+export const deleteTruckDocumentById: FastifySchema = {
+  headers: {
+    type: 'object',
+    properties: {
+      authorization: { type: 'string' }
+    },
+    require: ['authorization']
+  },
+  params: { 
+    truckId: { type: 'string' },
+    docId: { type: 'string' } },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        message: { type: 'boolean' }
+      },
+      additionalProperties: false
+    }
+  }
+}
+
 export const updateTruckDocumentResponse: FastifySchema = {
   // body: {},
   params: {

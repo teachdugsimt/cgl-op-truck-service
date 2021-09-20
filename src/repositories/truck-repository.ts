@@ -147,7 +147,7 @@ export default class TruckRepository {
           } else objectPhoto[e] = null
         }))
         if (data.document && typeof Array.isArray(data.document) &&
-        data.document.length > 0) data.document.map(e => arr_tmp_attach_code.push(e)) 
+          data.document.length > 0) data.document.map(e => arr_tmp_attach_code.push(e))
 
         console.log("Array list File attach code :: ", arr_tmp_attach_code)
         const responseConfirm = await this.confirmMedia(arr_tmp_attach_code)
@@ -235,17 +235,18 @@ export default class TruckRepository {
       const saveTruck: any = await repository.save(repository.create({
         id: data.id,
         // carrierId: data?.carrierId,
-        registrationNumber: data.registrationNumber && data.registrationNumber.length ? data.registrationNumber.join(',') : null,
-        loadingWeight: data.loadingWeight || 0,
-        stallHeight: data.stallHeight || "LOW",
-        isTipper: data.tipper || false,
-        truckType: data.truckType,
-        document: data.document && typeof Array.isArray(data.document) &&
-          data.document.length > 0 ? this.processVehicleDocument(data.document) : null,
+        ...(data.registrationNumber && data.registrationNumber.length ? { registrationNumber: data.registrationNumber.join(',') } : undefined),
+        ...(data.loadingWeight ? { loadingWeight: data.loadingWeight } : undefined),
+        ...(data.stallHeight ? { stallHeight: data.stallHeight } : undefined),
+        ...(data.tipper ? { isTipper: data.tipper } : undefined),
+        ...(data.truckType ? { truckType: data.truckType } : undefined),
+        ...(data.document && typeof Array.isArray(data.document) &&
+        data.document.length > 0 ? { document: this.processVehicleDocument(data.document) } : undefined),
+        ...(data?.documentStatus ? { documentStatus: data.documentStatus } : undefined),
         updatedUser: "" + userId,
       }))
-      if(data.document && typeof Array.isArray(data.document) &&
-      data.document.length > 0) this.confirmMedia(data.document)
+      if (data.document && typeof Array.isArray(data.document) &&
+        data.document.length > 0) this.confirmMedia(data.document)
       console.log("SaveTruck : ", saveTruck)
 
 
@@ -320,7 +321,7 @@ export default class TruckRepository {
           this.confirmMedia(pick_new_val)
           console.log("Create new list result :: ", resultCreateNew)
         }
-        
+
       }
 
 

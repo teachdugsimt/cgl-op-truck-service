@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify';
-import { Controller, GET, POST, PUT, getInstanceByToken, FastifyInstanceToken } from 'fastify-decorators';
+import { Controller, GET, POST, PUT, DELETE, getInstanceByToken, FastifyInstanceToken } from 'fastify-decorators';
 import SearchService from '../services/search.service';
 import SearchServiceGet from '../services/search-get.service';
 import TruckService from '../services/truck.service';
@@ -8,7 +8,7 @@ import UpdateTruckProfileService from '../services/update-truck-profile.service'
 import TruckDocumentService from '../services/truck-document.service'
 import {
   TruckOne, TruckOneOnlyMe, TruckOneMST, FavoriteTruck, PostFavoriteTruck, generateUploadLinkResponse,
-  deleteUploadLinkResponse, updateTruckDocumentResponse
+  deleteUploadLinkResponse, updateTruckDocumentResponse, deleteTruckDocumentById
 } from './truck.schema';
 import {
   searchGetSchema, createTruck, updateTruck, getMySchema, getAllMeSchema,
@@ -17,6 +17,7 @@ import {
 import { RawUpdateTruck, Truck, TruckListResponse, TruckFilterGet } from './propsTypes'
 import TruckDynamodbRepository, { UploadLink } from '../repositories/upload-link.repository'
 import Utility from 'utility-layer/dist/security'
+import { IoTThingsGraph } from 'aws-sdk';
 const util = new Utility();
 @Controller({ route: '/api/v1/trucks' })
 export default class TruckController {
@@ -427,6 +428,27 @@ export default class TruckController {
         }
       }
       else reply.status(400).send({ message: "Invalid truckId" })
+    } catch (err) {
+      throw new Error(err)
+    }
+  }
+
+  @DELETE({
+    url: '/:truckId/document/:docId',
+    options: {
+      schema: deleteTruckDocumentById
+    }
+  })
+  async DeleteTruckDocumentById(req: FastifyRequest<{ Params: { truckId: string, docId: string } }>, reply: FastifyReply): Promise<any> {
+    try {
+      if (req.params.truckId && req.params.docId) {
+        const decodeId = util.decodeUserId(req.params.truckId)
+        const result = await this.truckService.deleteDocumentById(decodeId, req.params.docId)
+        console.log("Result delete document : ", result)
+        return result
+      } else reply.status(400).send({
+        message: "bad request"
+      })
     } catch (err) {
       throw new Error(err)
     }

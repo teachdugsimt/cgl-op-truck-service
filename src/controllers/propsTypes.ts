@@ -102,7 +102,8 @@ export interface RawUpdateTruck extends UpdateTruck {
 export interface ParseUpdateTruck extends UpdateTruck {
   id: number
   carrierId?: number
-  document?: string[] | null 
+  document?: string[] | null
+  documentStatus?: "NO_DOCUMENT" | "WAIT_FOR_VERIFIED" | "VERIFIED" | "REJECTED"
 }
 
 export interface TruckFilter {
