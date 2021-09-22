@@ -1,32 +1,4 @@
 import { FastifySchema } from "fastify";
-const inputCreateTruck = {
-  type: 'object',
-  properties: {
-    carrierId: { type: 'string' },
-    truckTypes: { type: 'number' },
-    loadingWeight: { type: 'number', nullable: true },
-    stallHeight: { type: 'string', nullable: true },
-    tipper: { type: 'boolean', nullable: true },
-    registrationNumber: { type: 'array' },
-    createdFrom: { type: 'number', nullable: true },
-    truckPhotos: {
-      type: 'object', properties: {
-        front: { type: 'string', nullable: true },
-        back: { type: 'string', nullable: true },
-        left: { type: 'string', nullable: true },
-        right: { type: 'string', nullable: true },
-      }
-    },
-    workingZones: {
-      type: 'array', items: {
-        type: 'object', properties: {
-          region: { type: 'number' },
-          province: { type: 'number', nullable: true }
-        }
-      }
-    }
-  }
-}
 
 const inputUpdateTruck = {
   type: 'object',
@@ -34,7 +6,7 @@ const inputUpdateTruck = {
   properties: {
     carrierId: { type: 'string' },
     id: { type: 'string' },
-    truckTypes: { type: 'number' },
+    truckType: { type: 'number' },
     loadingWeight: { type: 'number', nullable: true },
     stallHeight: { type: 'string', nullable: true },
     tipper: { type: 'boolean', nullable: true },
@@ -132,9 +104,31 @@ export const createTruck: FastifySchema = {
   },
   body: {
     type: 'object', properties: {
-      ...inputCreateTruck.properties,
+      carrierId: { type: 'string' },
+      truckType: { type: 'number' },
+      loadingWeight: { type: 'number', nullable: true },
+      stallHeight: { type: 'string', nullable: true },
+      tipper: { type: 'boolean', nullable: true },
+      registrationNumber: { type: 'array', items: { type: 'string' } },
+      createdFrom: { type: 'number', nullable: true },
+      truckPhotos: {
+        type: 'object', properties: {
+          front: { type: 'string', nullable: true },
+          back: { type: 'string', nullable: true },
+          left: { type: 'string', nullable: true },
+          right: { type: 'string', nullable: true },
+        }
+      },
+      workingZones: {
+        type: 'array', items: {
+          type: 'object', properties: {
+            region: { type: 'number' },
+            province: { type: 'number', nullable: true }
+          }
+        }
+      },
       document: { type: 'array', items: { type: 'string' }, nullable: true },
-    }
+    },
   },
   response: {
     200: {
@@ -147,6 +141,7 @@ export const createTruck: FastifySchema = {
               type: "object",
               additionalProperties: { type: "string" }, nullable: true
             },
+            truckPhotos: { type: 'object', additionalProperties: { type: "string" }, nullable: true },
             documentStatus: { type: 'string', nullable: true },
             carrierId: { type: 'number', nullable: true },
             registrationNumber: { type: 'array', nullable: true },
@@ -174,10 +169,7 @@ export const updateTruck: FastifySchema = {
   body: inputUpdateTruck,
   params: { id: { type: 'string' } },
   response: {
-    200: {
-      type: 'object',
-      properties: { data: { type: 'boolean' } }
-    }
+    200: { type: 'boolean' }
   }
 }
 
