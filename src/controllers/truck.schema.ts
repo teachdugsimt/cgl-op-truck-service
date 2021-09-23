@@ -84,9 +84,8 @@ const modelJoinTruck = {
   workingZones: { type: 'array' },
   createdFrom: { type: 'number', nullable: true },
   document: {
-    type: 'object', properties: {
-      "0": { type: 'string' },
-    }, nullable: true
+    type: "object",
+    additionalProperties: { type: "string" }, nullable: true
   },
   documentStatus: { type: 'string' },
   owner: {

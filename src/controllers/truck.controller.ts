@@ -17,7 +17,6 @@ import {
 import { RawUpdateTruck, Truck, TruckListResponse, TruckFilterGet } from './propsTypes'
 import TruckDynamodbRepository, { UploadLink } from '../repositories/upload-link.repository'
 import Utility from 'utility-layer/dist/security'
-import { IoTThingsGraph } from 'aws-sdk';
 const util = new Utility();
 @Controller({ route: '/api/v1/trucks' })
 export default class TruckController {
@@ -85,6 +84,8 @@ export default class TruckController {
       console.log("Request params :: ", truck_id)
       const data = await this.truckService?.findMyTruckWithId(TruckController.instance, truck_id)
       console.log("Final data find one (my truck) :: ", data)
+      delete data.document
+      delete data.documentStatus
       return { data }
     } catch (err) {
       console.log("Raw Erorr Controller : ", err)
