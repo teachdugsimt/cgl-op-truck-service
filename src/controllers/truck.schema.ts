@@ -267,9 +267,12 @@ export const deleteTruckDocumentById: FastifySchema = {
     },
     require: ['authorization']
   },
-  params: { 
-    truckId: { type: 'string' },
-    docId: { type: 'string' } },
+  params: {
+    truckId: { type: 'string' }
+  },
+  querystring: {
+    docId: { type: 'string' }
+  },
   response: {
     200: {
       type: 'object',

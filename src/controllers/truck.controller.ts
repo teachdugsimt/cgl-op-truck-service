@@ -435,16 +435,16 @@ export default class TruckController {
   }
 
   @DELETE({
-    url: '/:truckId/document/:docId',
+    url: '/:truckId/document',
     options: {
       schema: deleteTruckDocumentById
     }
   })
-  async DeleteTruckDocumentById(req: FastifyRequest<{ Params: { truckId: string, docId: string } }>, reply: FastifyReply): Promise<any> {
+  async DeleteTruckDocumentById(req: FastifyRequest<{ Params: { truckId: string }, Querystring: { docId: string } }>, reply: FastifyReply): Promise<any> {
     try {
-      if (req.params.truckId && req.params.docId) {
+      if (req.params.truckId && req.query.docId) {
         const decodeId = util.decodeUserId(req.params.truckId)
-        const result = await this.truckService.deleteDocumentById(decodeId, req.params.docId)
+        const result = await this.truckService.deleteDocumentById(decodeId, req.query.docId)
         console.log("Result delete document : ", result)
         return result
       } else reply.status(400).send({
