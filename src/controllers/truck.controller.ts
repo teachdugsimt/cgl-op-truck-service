@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify';
-import { Controller, GET, POST, PUT, DELETE, getInstanceByToken, FastifyInstanceToken } from 'fastify-decorators';
+import { Controller, GET, POST, PUT, PATCH, DELETE, getInstanceByToken, FastifyInstanceToken } from 'fastify-decorators';
 import SearchService from '../services/search.service';
 import SearchServiceGet from '../services/search-get.service';
 import TruckService from '../services/truck.service';
@@ -8,7 +8,7 @@ import UpdateTruckProfileService from '../services/update-truck-profile.service'
 import TruckDocumentService from '../services/truck-document.service'
 import {
   TruckOne, TruckOneOnlyMe, TruckOneMST, FavoriteTruck, PostFavoriteTruck, generateUploadLinkResponse,
-  deleteUploadLinkResponse, updateTruckDocumentResponse, deleteTruckDocumentById
+  deleteUploadLinkResponse, updateTruckDocumentResponse, deleteTruckDocumentById, documentStatusSchema
 } from './truck.schema';
 import {
   searchGetSchema, createTruck, updateTruck, getMySchema, getAllMeSchema,
@@ -451,6 +451,22 @@ export default class TruckController {
         message: "bad request"
       })
     } catch (err) {
+      throw new Error(err)
+    }
+  }
+
+  @PATCH({
+    url: '/:truckId/doc-status',
+    options: {
+      schema: documentStatusSchema
+    }
+  })
+  async UpdateDocumentStatus(req: FastifyRequest<{ Params: { truckId: string }, Body: { status: 'NO_DOCUMENT' | 'WAIT_FOR_VERIFIED' | 'VERIFIED' | 'REJECTED' } }>, reply: FastifyReply): Promise<any> {
+    try {
+      await this.truckService.updateUserDocumentStatus(req.params.truckId, req.body.status);
+      return reply.status(204).send();
+    } catch (err: any) {
+      console.log('err :>> ', err);
       throw new Error(err)
     }
   }

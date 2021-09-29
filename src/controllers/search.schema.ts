@@ -12,6 +12,7 @@ const inputUpdateTruck = {
     tipper: { type: 'boolean', nullable: true },
     registrationNumber: { type: 'array', items: { type: 'string' } },
     document: { type: 'array', items: { type: 'string' }, nullable: true },
+    documentStatus: { type: 'string', nullable: true },
     truckPhotos: {
       type: 'object', properties: {
         front: {

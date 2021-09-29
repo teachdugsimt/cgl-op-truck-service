@@ -306,3 +306,26 @@ export const updateTruckDocumentResponse: FastifySchema = {
     }
   }
 }
+
+export const documentStatusSchema: FastifySchema = {
+  params: {
+    truckId: { type: 'string' }
+  },
+  body: {
+    type: 'object',
+    properties: {
+      status: {
+        type: 'string',
+        enum: ['NO_DOCUMENT', 'WAIT_FOR_VERIFIED', 'VERIFIED', 'REJECTED'],
+        description: 'status allow with [NO_DOCUMENT, WAIT_FOR_VERIFIED, VERIFIED, REJECTED] only'
+      }
+    },
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {},
+      additionalProperties: false
+    }
+  }
+}

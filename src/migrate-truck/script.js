@@ -2232,11 +2232,11 @@ const main = async () => {
 
     //  ** CLEAN, CLEAR ... SCRIPT **
     // await parseRegistrationNumber()
-    // await cleanDuplicateTruckByRegistration()
+    await cleanDuplicateTruckByRegistration()
     // await clearDuplicateRegistrationAdvance()
     // await updateWorkingZone()
 
-    await checkingWorkingZone()
+    // await checkingWorkingZone()
     return true
   } catch (error) {
     throw error
