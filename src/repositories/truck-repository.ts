@@ -42,6 +42,7 @@ export default class TruckRepository {
     return truckRepository.findOne(id, options);
   }
 
+
   async update(data: Types.PureTruck): Promise<any> {
     const server: any = this.instance
     const truckRepository: Repository<DtbTruck> = server?.db?.truck;

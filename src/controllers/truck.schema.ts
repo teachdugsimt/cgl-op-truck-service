@@ -84,9 +84,8 @@ const modelJoinTruck = {
   workingZones: { type: 'array' },
   createdFrom: { type: 'number', nullable: true },
   document: {
-    type: 'object', properties: {
-      "0": { type: 'string' },
-    }, nullable: true
+    type: "object",
+    additionalProperties: { type: "string" }, nullable: true
   },
   documentStatus: { type: 'string' },
   owner: {
@@ -268,9 +267,12 @@ export const deleteTruckDocumentById: FastifySchema = {
     },
     require: ['authorization']
   },
-  params: { 
-    truckId: { type: 'string' },
-    docId: { type: 'string' } },
+  params: {
+    truckId: { type: 'string' }
+  },
+  querystring: {
+    docId: { type: 'string' }
+  },
   response: {
     200: {
       type: 'object',
@@ -300,6 +302,29 @@ export const updateTruckDocumentResponse: FastifySchema = {
       properties: {
         message: { type: 'string' }
       },
+      additionalProperties: false
+    }
+  }
+}
+
+export const documentStatusSchema: FastifySchema = {
+  params: {
+    truckId: { type: 'string' }
+  },
+  body: {
+    type: 'object',
+    properties: {
+      status: {
+        type: 'string',
+        enum: ['NO_DOCUMENT', 'WAIT_FOR_VERIFIED', 'VERIFIED', 'REJECTED'],
+        description: 'status allow with [NO_DOCUMENT, WAIT_FOR_VERIFIED, VERIFIED, REJECTED] only'
+      }
+    },
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {},
       additionalProperties: false
     }
   }

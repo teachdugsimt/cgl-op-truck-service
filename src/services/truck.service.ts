@@ -3,8 +3,10 @@ import TruckRepository from '../repositories/truck-repository'
 import { FastifyInstance } from 'fastify';
 import { RawTruck, ParseUpdateTruck } from '../controllers/propsTypes'
 import _ from 'lodash'
+import Utility from 'utility-layer/dist/security'
+import { stat } from 'fs';
 
-
+const utility = new Utility();
 const deleteDocument = (document, docId) => {
   let tmpData = document
 
@@ -99,6 +101,16 @@ export default class TruckService {
       trucks: countTrucks,
       zones: countZones
     }
+  }
+
+
+  async updateUserDocumentStatus(truckId: string, status: 'NO_DOCUMENT' | 'WAIT_FOR_VERIFIED' | 'VERIFIED' | 'REJECTED'): Promise<any> {
+    const repo = new TruckRepository()
+    const id = utility.decodeUserId(truckId);
+    const data = await repo.findOne(id)
+    const newData = { ...data, documentStatus: status }
+    console.log("New data ;: ", newData)
+    return repo.update(newData);
   }
 
   @Destructor()

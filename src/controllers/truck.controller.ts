@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify';
-import { Controller, GET, POST, PUT, DELETE, getInstanceByToken, FastifyInstanceToken } from 'fastify-decorators';
+import { Controller, GET, POST, PUT, PATCH, DELETE, getInstanceByToken, FastifyInstanceToken } from 'fastify-decorators';
 import SearchService from '../services/search.service';
 import SearchServiceGet from '../services/search-get.service';
 import TruckService from '../services/truck.service';
@@ -8,7 +8,7 @@ import UpdateTruckProfileService from '../services/update-truck-profile.service'
 import TruckDocumentService from '../services/truck-document.service'
 import {
   TruckOne, TruckOneOnlyMe, TruckOneMST, FavoriteTruck, PostFavoriteTruck, generateUploadLinkResponse,
-  deleteUploadLinkResponse, updateTruckDocumentResponse, deleteTruckDocumentById
+  deleteUploadLinkResponse, updateTruckDocumentResponse, deleteTruckDocumentById, documentStatusSchema
 } from './truck.schema';
 import {
   searchGetSchema, createTruck, updateTruck, getMySchema, getAllMeSchema,
@@ -17,7 +17,6 @@ import {
 import { RawUpdateTruck, Truck, TruckListResponse, TruckFilterGet } from './propsTypes'
 import TruckDynamodbRepository, { UploadLink } from '../repositories/upload-link.repository'
 import Utility from 'utility-layer/dist/security'
-import { IoTThingsGraph } from 'aws-sdk';
 const util = new Utility();
 @Controller({ route: '/api/v1/trucks' })
 export default class TruckController {
@@ -85,6 +84,8 @@ export default class TruckController {
       console.log("Request params :: ", truck_id)
       const data = await this.truckService?.findMyTruckWithId(TruckController.instance, truck_id)
       console.log("Final data find one (my truck) :: ", data)
+      delete data.document
+      delete data.documentStatus
       return { data }
     } catch (err) {
       console.log("Raw Erorr Controller : ", err)
@@ -434,22 +435,38 @@ export default class TruckController {
   }
 
   @DELETE({
-    url: '/:truckId/document/:docId',
+    url: '/:truckId/document',
     options: {
       schema: deleteTruckDocumentById
     }
   })
-  async DeleteTruckDocumentById(req: FastifyRequest<{ Params: { truckId: string, docId: string } }>, reply: FastifyReply): Promise<any> {
+  async DeleteTruckDocumentById(req: FastifyRequest<{ Params: { truckId: string }, Querystring: { docId: string } }>, reply: FastifyReply): Promise<any> {
     try {
-      if (req.params.truckId && req.params.docId) {
+      if (req.params.truckId && req.query.docId) {
         const decodeId = util.decodeUserId(req.params.truckId)
-        const result = await this.truckService.deleteDocumentById(decodeId, req.params.docId)
+        const result = await this.truckService.deleteDocumentById(decodeId, req.query.docId)
         console.log("Result delete document : ", result)
         return result
       } else reply.status(400).send({
         message: "bad request"
       })
-    } catch (err) {
+    } catch (err: any) {
+      throw new Error(err)
+    }
+  }
+
+  @PATCH({
+    url: '/:truckId/doc-status',
+    options: {
+      schema: documentStatusSchema
+    }
+  })
+  async UpdateDocumentStatus(req: FastifyRequest<{ Params: { truckId: string }, Body: { status: 'NO_DOCUMENT' | 'WAIT_FOR_VERIFIED' | 'VERIFIED' | 'REJECTED' } }>, reply: FastifyReply): Promise<any> {
+    try {
+      await this.truckService.updateUserDocumentStatus(req.params.truckId, req.body.status);
+      return reply.status(204).send();
+    } catch (err: any) {
+      console.log('err :>> ', err);
       throw new Error(err)
     }
   }
