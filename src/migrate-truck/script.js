@@ -1416,9 +1416,9 @@ const updateWorkingZone = async () => {
     port: 5432,
   }
   const stgConnection = {
-    host: "7uZrE546PzCjEV^e^tKpvs43PJTnHN",
+    host: "cgl-db.cj4ycxviwust.ap-southeast-1.rds.amazonaws.com",
     user: "postgres",
-    password: "cgl-db.cj4ycxviwust.ap-southeast-1.rds.amazonaws.com",
+    password: "7uZrE546PzCjEV^e^tKpvs43PJTnHN",
     database: 'truck_service',
     port: 5432,
   }
