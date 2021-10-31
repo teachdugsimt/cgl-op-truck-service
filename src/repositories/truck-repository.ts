@@ -239,7 +239,7 @@ export default class TruckRepository {
         ...(data.registrationNumber && data.registrationNumber.length ? { registrationNumber: data.registrationNumber.join(',') } : undefined),
         ...(data.loadingWeight ? { loadingWeight: data.loadingWeight } : undefined),
         ...(data.stallHeight ? { stallHeight: data.stallHeight } : undefined),
-        ...(data.tipper ? { isTipper: data.tipper } : undefined),
+        ...(typeof data?.tipper == 'boolean' ? { isTipper: data.tipper } : undefined),
         ...(data.truckType ? { truckType: data.truckType } : undefined),
         ...(data.document && typeof Array.isArray(data.document) &&
         data.document.length > 0 ? { document: this.processVehicleDocument(data.document) } : undefined),
