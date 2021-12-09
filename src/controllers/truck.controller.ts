@@ -1,6 +1,5 @@
 import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify';
 import { Controller, GET, POST, PUT, PATCH, DELETE, getInstanceByToken, FastifyInstanceToken } from 'fastify-decorators';
-import SearchService from '../services/search.service';
 import SearchServiceGet from '../services/search-get.service';
 import TruckService from '../services/truck.service';
 import FavoriteService from '../services/favorite.service'
@@ -135,7 +134,6 @@ export default class TruckController {
 
       console.log("Decode id :  ", id)
       data.id = id
-      // data.carrierId = carrierId
 
       const result = await this.truckService?.updateTruck(TruckController.instance, data, decodeUserId)
       return result ? true : false
@@ -302,8 +300,7 @@ export default class TruckController {
       const token = req.headers.authorization
       const rawObject = util.getUserIdByToken(token)
       const userId = util.decodeUserId(rawObject)
-      const response = await this.favoriteTruckService?.addFavoriteTruck(TruckController.instance, userId, util.decodeUserId(req.body.id))
-      return response
+      return await this.favoriteTruckService?.addFavoriteTruck(TruckController.instance, userId, util.decodeUserId(req.body.id))
     } catch (err) {
       console.log("Raw Erorr Controller : ", err)
       return err
@@ -410,7 +407,7 @@ export default class TruckController {
         console.log("Step 1 : upload link data : ", uploadTokenLink)
 
         // 2. call media/confirm
-        if (Array.isArray(req.body.url) == false) {
+        if (!Array.isArray(req.body.url)) {
           reply.status(400).send({ message: "Invalid url format type" })
         }
         const confirmResult = await this.updateTruckProfileService.confirmMedia(req.body.url)

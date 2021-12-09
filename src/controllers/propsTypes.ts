@@ -1,10 +1,10 @@
 import { VwTruckList } from '../models'
 export interface TruckList {
-  truckAmount?: number | undefined
-  truckTypes?: number | undefined
+  truckAmount: number | undefined
+  truckTypes: number | undefined
 
-  id?: string | undefined
-  truckType?: number | undefined
+  id: string | undefined
+  truckType: number | undefined
   loadingWeight: number | undefined
   stallHeight: string | undefined
   createdAt: string | undefined
