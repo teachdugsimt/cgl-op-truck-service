@@ -5,26 +5,26 @@ export interface TruckList {
 
   id?: string | undefined
   truckType?: number | undefined
-  loadingWeight?: number | undefined
-  stallHeight?: string | undefined
-  createdAt?: string | undefined
-  updatedAt?: string | undefined
-  approveStatus?: string | undefined
-  registrationNumber?: Array<string> | undefined
-  tipper?: boolean | undefined
-  phoneNumber?: string | undefined
-  isLiked?: boolean | undefined
+  loadingWeight: number | undefined
+  stallHeight: string | undefined
+  createdAt: string | undefined
+  updatedAt: string | undefined
+  approveStatus: string | undefined
+  registrationNumber: Array<string> | undefined
+  tipper: boolean | undefined
+  phoneNumber: string | undefined
+  isLiked: boolean | undefined
   workingZones?: Array<{
-    region?: number | undefined
-    province?: number | undefined
+    region: number | undefined
+    province: number | undefined
   }>
   owner: {
-    id?: number | undefined
-    userId?: string | undefined
-    companyName?: string | undefined
-    fullName?: string | undefined
-    mobileNo?: string | undefined
-    email?: string | undefined
+    id: number | undefined
+    userId: string | undefined
+    companyName: string | undefined
+    fullName: string | undefined
+    mobileNo: string | undefined
+    email: string | undefined
     avatar?: {
       object: string | undefined
       token: string | undefined
@@ -80,8 +80,6 @@ export interface TruckPhotoUpdate {
   } | null
 }
 export interface UpdateTruck {
-  // id: number
-  // carrierId: number
   truckType: number
   loadingWeight?: number | null
   stallHeight: string | null
@@ -107,22 +105,22 @@ export interface ParseUpdateTruck extends UpdateTruck {
 }
 
 export interface TruckFilter {
-  descending?: boolean | undefined
+  descending: boolean | undefined
   page?: number | string
   rowsPerPage?: number | string
-  sortBy?: string | undefined
+  sortBy: string | undefined
   truckTypes?: Array<number>
   workingZones?: Array<number>
 }
 export interface TruckFilterGet {
-  descending?: boolean | undefined
+  descending: boolean | undefined
   page?: number | string
   rowsPerPage?: number | string
-  sortBy?: string | undefined
-  truckTypes?: string | undefined
-  status?: string | undefined
-  workingZones?: string | undefined
-  searchText?: string | undefined
+  sortBy: string | undefined
+  truckTypes: string | undefined
+  status: string | undefined
+  workingZones: string | undefined
+  searchText: string | undefined
 }
 
 

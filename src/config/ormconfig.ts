@@ -24,23 +24,13 @@ const main = async () => {
     port: data.port || 5432,
     username: data.username || "postgres",
     password: data.password || "=5BjfT_-uaa98yYymACI2415a==LA,",
-    // name: "cgl-dev-db",
-    // host: "cgl-dev-db.chbn9ns43yos.ap-southeast-1.rds.amazonaws.com",
-    // port: 5432,
-    // username: "postgres",
-    // password: "=5BjfT_-uaa98yYymACI2415a==LA,",
     logging: true,
 
-    // entities: [__dirname + "/*.ts"],
-    // entities: ["src/models/*.entity.ts"],
     entities: [DtbTruck],
-    // entities: ['src/models/truck.entity.ts'],
 
     synchronize: false,
     dropSchema: false,  // drop table in every start connect
 
-    // migrationsTransactionMode: "all",
-    // migrationsTableName: 'dtb_role',
     migrationsTransactionMode: "none",
     migrationsRun: true,
     migrations: [
